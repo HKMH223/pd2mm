@@ -26,7 +26,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/util"
-	"github.com/hkmh223/pd2mm/internal/mm"
+	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
 var (
@@ -73,12 +73,12 @@ func main() {
 	}
 
 	if !filesystem.Exists(flags.Config) {
-		if err := mm.Write(flags.Config); err != nil {
+		if err := pd2mm.Write(flags.Config); err != nil {
 			logger.SharedLogger.Error("Failed to write configuration file", "err", err)
 		}
 	}
 
-	if c, err := mm.Read(flags.Config); err == nil {
+	if c, err := pd2mm.Read(flags.Config); err == nil {
 		c.Start()
 	} else {
 		logger.SharedLogger.Error("Failed to read configuration file", "err", err)

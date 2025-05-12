@@ -25,11 +25,12 @@ import (
 	"os"
 )
 
-func GuiConsoleHandle(args []string, minArgs int, cli, gui func(in, out, err io.Writer), _ bool) error {
+// WindowConsoleHandle optionally allocated a console to a window process.
+func WindowConsoleHandle(args []string, minArgs int, console, window func(in, out, err io.Writer), _ bool) error {
 	if len(args) > minArgs {
-		cli(os.Stdin, os.Stdout, os.Stderr)
+		console(os.Stdin, os.Stdout, os.Stderr)
 	} else {
-		gui(os.Stdin, os.Stdout, os.Stderr)
+		window(os.Stdin, os.Stdout, os.Stderr)
 	}
 
 	return nil

@@ -22,7 +22,7 @@ func CursorBack(n int) {
 	cursorMove(-n, 0)
 }
 
-func cursorMove(x int, y int) {
+func cursorMove(x, y int) {
 	handle := syscall.Handle(os.Stdout.Fd())
 
 	var csbi consoleScreenBufferInfo

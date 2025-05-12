@@ -20,6 +20,7 @@
 
 package win32
 
+// FreeConsole frees the console associated with the current process.
 func FreeConsole() error {
 	return nil
 }

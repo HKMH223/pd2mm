@@ -11,16 +11,16 @@ I am generally lenient on complexity in regards to linters. Complexity is subjec
 
 ## Parameter Naming Conventions
 - Parameters should be short (~1 [one] word).
-- Parameters should be shortened by removing vowels (destination ❌ -> dst ✅).
+- Parameters should be shortened by removing vowels (destination ❌ -> dest ✅).
     - Prioritize *words* over *1 (one) letter*.
 
 ## Variable Naming Conventions
-- Global variables **SHOULD** use longer forms of words (dst ❌ -> destination ✅).
+- Global variables **SHOULD** use longer forms of words (dest ❌ -> destination ✅).
     - Certain keywords can and should be shortened (Error ❌ -> Err ✅).
     - Global variables should *always* be discernible without *context.*
 - Local variables should **NOT** use *1 (one) letter*.
-- Local variables **SHOULD** use longer forms of words (dst ❌ -> destination ✅).
-    - Local variables with *2 (two) or more words* should be shortened to *1 (one) word*, or by by removing vowels (destination ❌ -> dst ✅)
+- Local variables **SHOULD** use longer forms of words (dest ❌ -> destination ✅).
+    - Local variables with *2 (two) or more words* should be shortened to *1 (one) word*, or by by removing vowels (destination ❌ -> dest ✅)
 
 ### Good (✅) Example
 ```go

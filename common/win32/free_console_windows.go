@@ -22,6 +22,7 @@ package win32
 
 import "syscall"
 
+// FreeConsole frees the console associated with the current process.
 func FreeConsole() error {
 	proc := syscall.MustLoadDLL("kernel32.dll").MustFindProc("FreeConsole")
 

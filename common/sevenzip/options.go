@@ -29,6 +29,7 @@ type Options struct {
 	Memory         string
 }
 
+// getDefaultOptions returns the default options for 7zip.
 func getDefaultOptions() Options {
 	return Options{
 		FormatFormat:   "7z",
@@ -42,6 +43,7 @@ func getDefaultOptions() Options {
 	}
 }
 
+// assureOptions ensures that the provided options are valid.
 func assureOptions(opts ...Options) Options {
 	defopts := getDefaultOptions()
 

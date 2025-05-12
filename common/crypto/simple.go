@@ -35,6 +35,7 @@ import (
 
 var errHashNotEqual = errors.New("file hash is not equal to specified hash")
 
+// Validate validates the hash of a file.
 func Validate(path, hash string, hashType hash.Hash) error {
 	hashA, err := NewHash(path, hashType)
 	if err != nil {
@@ -48,6 +49,7 @@ func Validate(path, hash string, hashType hash.Hash) error {
 	return nil
 }
 
+// NewMD5 returns the MD5 hash of a file.
 func NewMD5(path string) (string, error) {
 	s, err := NewHash(path, md5.New()) //nolint:gosec // allowed
 	if err != nil {
@@ -57,6 +59,7 @@ func NewMD5(path string) (string, error) {
 	return s, nil
 }
 
+// NewSHA1 returns the SHA-1 hash of a file.
 func NewSHA1(path string) (string, error) {
 	s, err := NewHash(path, sha1.New()) //nolint:gosec // allowed
 	if err != nil {
@@ -66,6 +69,7 @@ func NewSHA1(path string) (string, error) {
 	return s, nil
 }
 
+// NewSHA256 returns the SHA-256 hash of a file.
 func NewSHA256(path string) (string, error) {
 	s, err := NewHash(path, sha256.New())
 	if err != nil {
@@ -75,6 +79,7 @@ func NewSHA256(path string) (string, error) {
 	return s, nil
 }
 
+// NewSHA512 returns the SHA-512 hash of a file.
 func NewSHA512(path string) (string, error) {
 	s, err := NewHash(path, sha512.New())
 	if err != nil {
@@ -84,6 +89,7 @@ func NewSHA512(path string) (string, error) {
 	return s, nil
 }
 
+// NewCRC32 returns the CRC-32 hash of a file.
 func NewCRC32(path string) (string, error) {
 	s, err := NewHash(path, crc32.New(crc32.IEEETable))
 	if err != nil {
@@ -93,6 +99,7 @@ func NewCRC32(path string) (string, error) {
 	return s, nil
 }
 
+// NewCRC64 returns the CRC-64 hash of a file.
 func NewCRC64(path string) (string, error) {
 	s, err := NewHash(path, crc64.New(crc64.MakeTable(crc32.IEEE)))
 	if err != nil {
@@ -102,6 +109,7 @@ func NewCRC64(path string) (string, error) {
 	return s, nil
 }
 
+// Murmur3X64_128Hash returns the Murmur hash of a file.
 func Murmur3X64_128Hash(seed int, str string) uint64 {
 	bytes := murmurhash3.NewX64_128(seed)
 	bytes.Write(readwrite.Utf8ToUtf16(str))
@@ -109,6 +117,7 @@ func Murmur3X64_128Hash(seed int, str string) uint64 {
 	return binary.LittleEndian.Uint64(bytes.Sum(nil))
 }
 
+// Murmur3X86_32Hash returns the Murmur hash of a file.
 func Murmur3X86_32Hash(seed int, str string) uint32 {
 	bytes := murmurhash3.NewX86_32(seed)
 	bytes.Write(readwrite.Utf8ToUtf16(str))
@@ -116,6 +125,7 @@ func Murmur3X86_32Hash(seed int, str string) uint32 {
 	return binary.LittleEndian.Uint32(bytes.Sum(nil))
 }
 
+// Murmur3X86_128Hash returns the Murmur hash of a file.
 func Murmur3X86_128Hash(seed int, str string) uint32 {
 	bytes := murmurhash3.NewX86_128(seed)
 	bytes.Write(readwrite.Utf8ToUtf16(str))

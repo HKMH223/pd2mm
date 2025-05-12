@@ -24,4 +24,5 @@ import (
 	"os/exec"
 )
 
+// Set the hide window attribute.
 func setHideWindowAttr(_ *exec.Cmd, _ bool) {}

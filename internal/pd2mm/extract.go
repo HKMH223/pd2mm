@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mm
+package pd2mm
 
 import (
 	"github.com/hkmh223/pd2mm/common/filesystem"
@@ -25,21 +25,25 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
+// Extract extracts the contents of an archive to a specified directory.
 func Extract(search PathSearch) error {
-	if err := filesystem.DeleteDirectory(search.Extract); err != nil {
+	if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Extract)); err != nil {
 		logger.SharedLogger.Warn("Failed to delete directory", "path", search.Extract, "err", err)
 	}
 
-	logger.SharedLogger.Info(lang.Lang("extracting"), "source", search.Path, "destination", search.Extract)
+	source := filesystem.FromCwd(search.Path)
+	destination := filesystem.FromCwd(search.Extract)
+	logger.SharedLogger.Info(lang.Lang("extracting"), "source", source, "destination", destination)
 
-	return extract(search.Path, search.Extract)
+	return extract(source, destination)
 }
 
-func extract(src string, dst string) error {
+// extract extracts the contents of an archive to a specified directory.
+func extract(src, dest string) error {
 	files := filesystem.GetFiles(src)
 
 	for _, file := range files {
-		if _, err := sevenzip.Extract(file, dst, false); err != nil {
+		if _, err := sevenzip.Extract(file, dest, false); err != nil {
 			return err
 		}
 	}

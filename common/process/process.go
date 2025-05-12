@@ -25,7 +25,8 @@ import (
 	"runtime"
 )
 
-func DoesFileExist(name string) bool {
+// Check if a file exists.
+func Exists(name string) bool {
 	if _, err := exec.LookPath(name); err != nil {
 		return false
 	}
@@ -33,7 +34,8 @@ func DoesFileExist(name string) bool {
 	return true
 }
 
-func RunFile(name string, hide, rel, redirect bool, arg ...string) error {
+// Run a file with the given name.
+func RunProcess(name string, hide, rel, redirect bool, arg ...string) error {
 	path := name
 
 	if rel {

@@ -38,11 +38,11 @@ func DefaultUnzipMessenger() Messenger {
 	}
 }
 
-func Unzip(src, dst string) error {
-	return UnzipByPrefixWithMessenger(src, dst, "", DefaultUnzipMessenger())
+func Unzip(src, dest string) error {
+	return UnzipByPrefixWithMessenger(src, dest, "", DefaultUnzipMessenger())
 }
 
-func UnzipByPrefixWithMessenger(src, dst, prefix string, msg Messenger) error {
+func UnzipByPrefixWithMessenger(src, dest, prefix string, msg Messenger) error {
 	step := 1024
 	read, err := zip.OpenReader(src)
 	if err != nil { //nolint:wsl // gofumpt conflict
@@ -65,7 +65,7 @@ func UnzipByPrefixWithMessenger(src, dst, prefix string, msg Messenger) error {
 			return err
 		}
 
-		path := filepath.Join(dst, name)
+		path := filepath.Join(dest, name)
 		msg.AddedFile(path)
 
 		if file.FileInfo().IsDir() {
@@ -90,7 +90,7 @@ func maybeTrimPrefix(trim, prefix string) string {
 	return trim
 }
 
-func stepCopy(src string, dst io.Reader, step int64) error {
+func stepCopy(src string, dest io.Reader, step int64) error {
 	if err := os.MkdirAll(filepath.Dir(src), os.ModePerm); err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func stepCopy(src string, dst io.Reader, step int64) error {
 	}
 
 	for {
-		_, err := io.CopyN(path, dst, step)
+		_, err := io.CopyN(path, dest, step)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break

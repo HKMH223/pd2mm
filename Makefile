@@ -7,7 +7,7 @@ GO_BUILD=go build -trimpath -ldflags "$(LDFLAGS)"
 all: pd2mm-linux pd2mm-linux-arm64 pd2mm-darwin pd2mm-darwin-arm64 pd2mm-windows
 
 fmt:
-	gofumpt -l -w .
+	gofumpt -l -w -extra .
 
 mod:
 	go get -u

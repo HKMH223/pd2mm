@@ -29,6 +29,7 @@ const BinSize int = 2
 
 var ErrNoFunctionName = errors.New("no function name")
 
+// NewCommand returns a new command from the provided arguments.
 func NewCommand(args []string, name string, count int) ([]string, error) {
 	var names []string
 
@@ -50,6 +51,7 @@ func NewCommand(args []string, name string, count int) ([]string, error) {
 	return nil, ErrNoFunctionName
 }
 
+// SplitArguments splits a string into arguments.
 func SplitArguments(str string) []string {
 	var parts []string
 
@@ -74,6 +76,7 @@ func SplitArguments(str string) []string {
 	return parts
 }
 
+// CheckArgumentCount checks if the number of arguments is correct.
 func CheckArgumentCount(args []string, expected int) error {
 	if len(args) != expected {
 		return errExpectedArgs(expected, len(args))
@@ -82,6 +85,7 @@ func CheckArgumentCount(args []string, expected int) error {
 	return nil
 }
 
+// errexpectedArgs returns an error indicating that the number of arguments is incorrect.
 func errExpectedArgs(expected, got int) error {
 	return fmt.Errorf("expected: %d arguments but got %d", expected, got) //nolint:err113 // allowed
 }

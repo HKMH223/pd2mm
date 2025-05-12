@@ -44,6 +44,7 @@ type Messenger struct {
 	StartDownload func(string)
 }
 
+// Returns the default DownloadMessenger instance, which logs download events to the console.
 func DefaultDownloadMessenger() Messenger {
 	return Messenger{
 		StartDownload: func(name string) {
@@ -52,6 +53,7 @@ func DefaultDownloadMessenger() Messenger {
 	}
 }
 
+// Returns the default HashValidator instance, which hashes a file using SHA256 and compares it to the provided hash.
 func DefaultHashValidator(path, hash, name string) error {
 	if _, err := os.Stat(path); err == nil {
 		data, err := os.ReadFile(path)
@@ -70,14 +72,17 @@ func DefaultHashValidator(path, hash, name string) error {
 	return errFileHashNoMatch
 }
 
+// File is a convenience function that validates the download parameters and then downloads the file.
 func File(url, name, path string) error {
 	return FileWithContext(context.TODO(), DefaultDownloadMessenger(), url, "", name, path, nil)
 }
 
+// FileValidated is a convenience function that validates the download parameters and then downloads the file.
 func FileValidated(url, hash, name, path string) error {
 	return FileWithContext(context.TODO(), DefaultDownloadMessenger(), url, hash, name, path, DefaultHashValidator)
 }
 
+// FileWithBytes is a convenience function that validates the download parameters and then downloads the file.
 func FileWithBytes(url, name, path string) ([]byte, error) {
 	if err := FileWithContext(context.TODO(), DefaultDownloadMessenger(), url, "", name, path, nil); err != nil {
 		return nil, err
@@ -86,6 +91,7 @@ func FileWithBytes(url, name, path string) ([]byte, error) {
 	return read(path, name)
 }
 
+// FileWithBytesValidated is a convenience function that validates the download parameters and then downloads the file.
 func FileWithBytesValidated(url, hash, name, path string) ([]byte, error) {
 	if err := FileWithContext(context.TODO(), DefaultDownloadMessenger(), url, hash, name, path, DefaultHashValidator); err != nil {
 		return nil, err
@@ -94,6 +100,8 @@ func FileWithBytesValidated(url, hash, name, path string) ([]byte, error) {
 	return read(path, name)
 }
 
+// FileWithContextAndBytes is a convenience function that validates the download parameters and then downloads the file.
+//
 //nolint:lll // allowed
 func FileWithContextAndBytes(ctx context.Context, state Messenger, url, hash, name, path string, validator func(string, string, string) error) ([]byte, error) {
 	if err := FileWithContext(ctx, state, url, hash, name, path, validator); err != nil {
@@ -103,6 +111,8 @@ func FileWithContextAndBytes(ctx context.Context, state Messenger, url, hash, na
 	return read(path, name)
 }
 
+// FileWithContextAndBytesValidated is a convenience function that validates the download parameters and then downloads the file.
+//
 //nolint:lll // allowed
 func FileWithContext(ctx context.Context, state Messenger, url, hash, name, path string, validator func(string, string, string) error) error {
 	if err := validateDownloadParams(url, path, name); err != nil {
@@ -146,6 +156,8 @@ func FileWithContext(ctx context.Context, state Messenger, url, hash, name, path
 	return write(res, file, hash, name, true)
 }
 
+// Validate the download parameters to ensure they are not empty.
+// This includes checking for an empty URL, file path, and/or file name.
 func validateDownloadParams(url, path, name string) error {
 	if url == "" {
 		return errDownloadURLEmpty
@@ -162,6 +174,7 @@ func validateDownloadParams(url, path, name string) error {
 	return nil
 }
 
+// read reads the file at path/name and returns it as a byte slice.
 func read(path, name string) ([]byte, error) {
 	data, err := os.ReadFile(filepath.Join(path, name))
 	if err != nil {
@@ -171,6 +184,7 @@ func read(path, name string) ([]byte, error) {
 	return data, nil
 }
 
+// write writes the response to a file, and returns an error if it fails.
 func write(resp *http.Response, flags *os.File, hash, name string, skip bool) error {
 	sha := sha256.New()
 	buf := make([]byte, 1<<20) //nolint:mnd // 1 megabyte buffer

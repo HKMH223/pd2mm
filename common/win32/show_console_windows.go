@@ -24,6 +24,7 @@ import (
 	"syscall"
 )
 
+// ShowConsole shows or hides the console window.
 func ShowConsole(show bool) error {
 	getConsoleWindow := syscall.MustLoadDLL("kernel32.dll").MustFindProc("GetConsoleWindow")
 	showWindow := syscall.MustLoadDLL("user32.dll").MustFindProc("ShowWindow")

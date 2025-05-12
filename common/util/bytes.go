@@ -23,6 +23,7 @@ import (
 	"fmt"
 )
 
+// HexStringToBytes converts a hexadecimal string to its corresponding byte slice.
 func HexStringToBytes(hex string) ([]byte, error) {
 	var data []byte
 
@@ -40,7 +41,8 @@ func HexStringToBytes(hex string) ([]byte, error) {
 	return data, nil
 }
 
-func FindAllByteOccurrences(data []byte, pattern []byte) []int {
+// FindAllByteOccurrences finds all occurrences of a pattern in a byte slice.
+func FindAllByteOccurrences(data, pattern []byte) []int {
 	var ind []int
 
 	for i := range data {
@@ -52,7 +54,8 @@ func FindAllByteOccurrences(data []byte, pattern []byte) []int {
 	return ind
 }
 
-func ReplaceByteOccurrences(original []byte, expected []byte, replacement []byte, occurrence int) []byte {
+// ReplaceByteOccurrences replaces occurrences of a pattern in a byte slice.
+func ReplaceByteOccurrences(original, expected, replacement []byte, occurrence int) []byte {
 	var result []byte
 
 	remaining := original

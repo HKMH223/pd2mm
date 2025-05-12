@@ -167,6 +167,7 @@ type SectionHeader32X28 struct {
 
 var errRVALessThanOne = errors.New("rva is equal to '-1'")
 
+// Open a file at the specified path and return Data.
 func Open(path string) (*Data, error) {
 	data := new(Data)
 	file, err := os.Open(path)
@@ -192,6 +193,7 @@ func Open(path string) (*Data, error) {
 	return data, nil
 }
 
+// WriteBytes writes the specified bytes to the file at the given offset.
 func WriteBytes(data []byte, offset int, replace []byte) error {
 	if offset < 0 || offset+len(replace) > len(data) {
 		return errInvalidOffsetOrByteRange
@@ -202,6 +204,7 @@ func WriteBytes(data []byte, offset int, replace []byte) error {
 	return nil
 }
 
+// FindBytes searches for the specified bytes in the file.
 func ReadCOFFHeaderOffset(data []byte) (int, error) {
 	offset, err := FindBytes(data, COFFStartBytes)
 	if err != nil {
@@ -211,6 +214,7 @@ func ReadCOFFHeaderOffset(data []byte) (int, error) {
 	return offset, nil
 }
 
+// ReadDDBytes reads the data directory entry at the specified offset.
 func ReadDDBytes(data []byte) ([]byte, error) {
 	offset, err := ReadCOFFHeaderOffset(data)
 	if err != nil {
@@ -220,7 +224,8 @@ func ReadDDBytes(data []byte) ([]byte, error) {
 	return data[offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize : offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize+DataDirSize], nil
 }
 
-func ReadDDEntryOffset(data []byte, addr uint32, size uint32) (int, error) {
+// ReadDDEntryOffset reads the offset of the data directory entry at the specified address.
+func ReadDDEntryOffset(data []byte, addr, size uint32) (int, error) {
 	dir, err := ReadDDBytes(data)
 	if err != nil {
 		return -1, err
@@ -247,6 +252,7 @@ func ReadDDEntryOffset(data []byte, addr uint32, size uint32) (int, error) {
 	return offset + COFFStartBytesLen + COFFHeaderSize + OH64ByteSize + rva, nil
 }
 
+// ReadSHBytes reads the section header bytes at the specified offset.
 func ReadSHSize(file pe.File) (int, error) {
 	sections := len(file.Sections)
 	size := sections * SH32EntrySize
@@ -258,6 +264,7 @@ func ReadSHSize(file pe.File) (int, error) {
 	return size, nil
 }
 
+// ReadSHEntry reads the section header entry at the specified offset.
 func ReadSHBytes(data []byte, size int) ([]byte, error) {
 	offset, err := ReadCOFFHeaderOffset(data)
 	if err != nil {
@@ -267,6 +274,7 @@ func ReadSHBytes(data []byte, size int) ([]byte, error) {
 	return data[offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize+DataDirSize : offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize+DataDirSize+size], nil //nolint:lll // allowed
 }
 
+// ReadSHEntryOffset reads the offset of the specified section header entry.
 func ReadSHEntryOffset(data []byte, address int) (int, error) {
 	offset, err := ReadCOFFHeaderOffset(data)
 	if err != nil {
@@ -276,7 +284,8 @@ func ReadSHEntryOffset(data []byte, address int) (int, error) {
 	return offset + COFFStartBytesLen + COFFHeaderSize + OH64ByteSize + DataDirSize + address, nil
 }
 
-func ReadSectionBytes(file *Data, sectionVirtualAddress uint32, sectionSize uint32) ([]byte, error) {
+// ReadSectionBytes reads the specified section bytes.
+func ReadSectionBytes(file *Data, sectionVirtualAddress, sectionSize uint32) ([]byte, error) {
 	var section *pe.Section
 
 	for _, s := range file.PE.Sections {
@@ -296,6 +305,7 @@ func ReadSectionBytes(file *Data, sectionVirtualAddress uint32, sectionSize uint
 	return bytes, nil
 }
 
+// ReadImport reads the import section.
 func ReadImport(reader io.Reader) (Import, error) {
 	var data Import
 	err := binary.Read(reader, binary.LittleEndian, &data)
@@ -303,6 +313,7 @@ func ReadImport(reader io.Reader) (Import, error) {
 	return data, err
 }
 
+// ReadThunk reads the thunk section.
 func ReadThunk(reader io.Reader) (Thunk, error) {
 	var data Thunk
 	err := binary.Read(reader, binary.LittleEndian, &data)
@@ -310,6 +321,7 @@ func ReadThunk(reader io.Reader) (Thunk, error) {
 	return data, err
 }
 
+// ReadEncBlock reads the encryption block.
 func ReadDataDir(reader io.Reader) (DataDir, error) {
 	var data DataDir
 	err := binary.Read(reader, binary.LittleEndian, &data)
@@ -317,6 +329,7 @@ func ReadDataDir(reader io.Reader) (DataDir, error) {
 	return data, err
 }
 
+// ReadEncBlock reads the encryption block.
 func ReadEncBlock(reader io.Reader) (EncBlock, error) {
 	var data EncBlock
 	err := binary.Read(reader, binary.LittleEndian, &data)
@@ -324,9 +337,10 @@ func ReadEncBlock(reader io.Reader) (EncBlock, error) {
 	return data, err
 }
 
-func FindBytes(src []byte, dst []byte) (int, error) {
-	for i := range src[:len(src)-len(dst)+1] {
-		if MatchBytes(src[i:i+len(dst)], dst) {
+// FindBytes finds the index of the first occurrence of dest in src.
+func FindBytes(src, dest []byte) (int, error) {
+	for i := range src[:len(src)-len(dest)+1] {
+		if MatchBytes(src[i:i+len(dest)], dest) {
 			return i, nil
 		}
 	}
@@ -334,6 +348,7 @@ func FindBytes(src []byte, dst []byte) (int, error) {
 	return -1, errNoBytes
 }
 
+// PadBytes pads the bytes to the specified size.
 func PadBytes(data []byte, size int) []byte {
 	if len(data) < size {
 		paddingSize := size - len(data)
@@ -345,9 +360,10 @@ func PadBytes(data []byte, size int) []byte {
 	return data
 }
 
-func MatchBytes(src []byte, dst []byte) bool {
-	for i := range dst {
-		if src[i] != dst[i] {
+// MatchBytes matches the bytes in src to the bytes in dest.
+func MatchBytes(src, dest []byte) bool {
+	for i := range dest {
+		if src[i] != dest[i] {
 			return false
 		}
 	}

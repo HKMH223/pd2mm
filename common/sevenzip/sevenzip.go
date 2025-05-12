@@ -23,46 +23,50 @@ import (
 	"github.com/hkmh223/pd2mm/common/process"
 )
 
-func Extract(src, dst string, redirect bool) (ErrorCode, error) {
-	if !process.DoesFileExist("7z") {
+// Extract extracts the contents of a 7z archive to a directory.
+func Extract(src, dest string, redirect bool) (ErrorCode, error) {
+	if !process.Exists("7z") {
 		return ProcessNotFound, ErrSevenZipNotFound
 	}
 
-	if err := process.RunFile("7z", true, false, redirect, "x", src, "-o"+dst+"/*"); err != nil {
+	if err := process.RunProcess("7z", true, false, redirect, "x", src, "-o"+dest+"/*"); err != nil {
 		return CouldNotExtract, err
 	}
 
 	return NoError, nil
 }
 
-func ExtractFromBin(src, dst, bin string, redirect bool) (ErrorCode, error) {
+// ExtractFromBin extracts the contents of a 7z archive to a directory using a custom binary.
+func ExtractFromBin(src, dest, bin string, redirect bool) (ErrorCode, error) {
 	if !filesystem.Exists(bin) {
 		return ProcessNotFound, ErrSevenZipNotFound
 	}
 
-	if err := process.RunFile(bin, true, true, redirect, "x", src, "-o"+dst+"/*"); err != nil {
+	if err := process.RunProcess(bin, true, true, redirect, "x", src, "-o"+dest+"/*"); err != nil {
 		return CouldNotCompress, err
 	}
 
 	return NoError, nil
 }
 
-func Compress(src, dst string, redirect bool, opts ...Options) (ErrorCode, error) {
+// Compress compresses a directory to a 7z archive.
+func Compress(src, dest string, redirect bool, opts ...Options) (ErrorCode, error) {
 	opt := assureOptions(opts...)
 
-	if !process.DoesFileExist("7z") {
+	if !process.Exists("7z") {
 		return ProcessNotFound, ErrSevenZipNotFound
 	}
 
 	//nolint:lll // allowed
-	if err := process.RunFile("7z", true, false, redirect, "a", "-t"+opt.FormatFormat, dst, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
+	if err := process.RunProcess("7z", true, false, redirect, "a", "-t"+opt.FormatFormat, dest, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
 		return CouldNotCompress, err
 	}
 
 	return NoError, nil
 }
 
-func CompressFromBin(src, dst, bin string, redirectStd bool, opts ...Options) (ErrorCode, error) {
+// CompressFromBin compresses a directory to a 7z archive.
+func CompressFromBin(src, dest, bin string, redirectStd bool, opts ...Options) (ErrorCode, error) {
 	opt := assureOptions(opts...)
 
 	if !filesystem.Exists(bin) {
@@ -70,7 +74,7 @@ func CompressFromBin(src, dst, bin string, redirectStd bool, opts ...Options) (E
 	}
 
 	//nolint:lll // allowed
-	if err := process.RunFile(bin, true, true, redirectStd, "a", "-t"+opt.FormatFormat, dst, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
+	if err := process.RunProcess(bin, true, true, redirectStd, "a", "-t"+opt.FormatFormat, dest, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
 		return CouldNotCompress, err
 	}
 

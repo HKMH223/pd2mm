@@ -50,6 +50,7 @@ var (
 	errInvalidBufferSize = errors.New("error: invalid buffer size")
 )
 
+// NewHash creates a hash of the file at path.
 func NewHash(path string, hash hash.Hash) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -66,6 +67,7 @@ func NewHash(path string, hash hash.Hash) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
+// AESEncrypt encrypts the text using the key and returns the encrypted data.
 func AESEncrypt(key, text []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -85,7 +87,8 @@ func AESEncrypt(key, text []byte) ([]byte, error) {
 	return data, nil
 }
 
-func AESDecrypt(key []byte, iv []byte, buf []byte) ([]byte, error) { //nolint:varnamelen // allowed
+// AESDecrypt decrypts the text using the key and returns the decrypted data.
+func AESDecrypt(key, iv, buf []byte) ([]byte, error) { //nolint:varnamelen // allowed
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -105,7 +108,8 @@ func AESDecrypt(key []byte, iv []byte, buf []byte) ([]byte, error) { //nolint:va
 	return buf, nil
 }
 
-func AESDecryptBase64(kb64 string, iv []byte, buf []byte) error { //nolint:varnamelen // allowed
+// AESDecryptBase64 decrypts the text using the key and returns the decrypted data.
+func AESDecryptBase64(kb64 string, iv, buf []byte) error { //nolint:varnamelen // allowed
 	key, err := base64.StdEncoding.DecodeString(kb64)
 	if err != nil {
 		return errInvalidBase64Key
@@ -130,6 +134,7 @@ func AESDecryptBase64(kb64 string, iv []byte, buf []byte) error { //nolint:varna
 	return nil
 }
 
+// AESDecrypt decrypts the text using the key and returns the decrypted data.
 func DecryptDLF(data []byte) ([]byte, error) {
 	decrypt, err := AESDecrypt(DlfKey, data[0x41:], []byte{0})
 	if err != nil {
@@ -139,6 +144,7 @@ func DecryptDLF(data []byte) ([]byte, error) {
 	return decrypt, nil
 }
 
+// GetDLFAuto returns the decrypted data for the given CID.
 func GetDLFAuto(cid string) ([]byte, error) {
 	paths := []string{
 		cid + ".dlf",
@@ -155,6 +161,7 @@ func GetDLFAuto(cid string) ([]byte, error) {
 	return nil, errDlfFileNotFound
 }
 
+// DecodeCipherTag decodes the cipher tag from the given data.
 func DecodeCipherTag(dlf []byte) ([]byte, error) {
 	data := string(dlf)
 	pos := strings.Index(data, CipherTag)
@@ -178,6 +185,7 @@ func DecodeCipherTag(dlf []byte) ([]byte, error) {
 	return decode, nil
 }
 
+// GetOoaHash returns the OOA hash from the given data.
 func GetOoaHash(data []byte) []byte {
 	if len(data) < 0x3E { //nolint:mnd // allowed
 		return nil
@@ -186,6 +194,7 @@ func GetOoaHash(data []byte) []byte {
 	return data[0x2A:0x3E]
 }
 
+// ReadFile reads the given file and returns its contents.
 func readfile(name string) ([]byte, error) {
 	file, err := os.ReadFile(name)
 	if err != nil {

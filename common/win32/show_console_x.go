@@ -20,6 +20,7 @@
 
 package win32
 
+// ShowConsole shows or hides the console window.
 func ShowConsole(_ bool) error {
 	return nil
 }

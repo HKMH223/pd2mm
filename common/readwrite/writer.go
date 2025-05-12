@@ -41,6 +41,7 @@ type DataEntry struct {
 	FileName string
 }
 
+// FindByHash returns the first entry in data with a matching hash.
 func FindByHash(data []DataEntry, hash uint32) *DataEntry {
 	for _, entry := range data {
 		if entry.Hash == hash {
@@ -51,6 +52,7 @@ func FindByHash(data []DataEntry, hash uint32) *DataEntry {
 	return nil
 }
 
+// FindByFileName returns the first entry in data with a matching file name.
 func FindByFileName(data []DataEntry, name string) *DataEntry {
 	for _, entry := range data {
 		if entry.FileName == name {
@@ -61,6 +63,7 @@ func FindByFileName(data []DataEntry, name string) *DataEntry {
 	return nil
 }
 
+// NewWriter creates a new writer for the given file name.
 func NewWriter(name string, appendMode bool) (*Writer, error) {
 	var file *os.File
 
@@ -79,42 +82,52 @@ func NewWriter(name string, appendMode bool) (*Writer, error) {
 	return &Writer{file}, nil
 }
 
+// WriteUInt32 writes a 32-bit unsigned integer to the file.
 func (w *Writer) WriteUInt32(value uint32) error {
 	return binary.Write(w.file, binary.LittleEndian, value)
 }
 
+// WriteUInt64 writes a 64-bit unsigned integer to the file.
 func (w *Writer) WriteUInt64(value uint64) error {
 	return binary.Write(w.file, binary.LittleEndian, value)
 }
 
+// Write writes data to the writer.
 func (w *Writer) Write(data []byte) (int, error) {
 	return w.file.Write(data)
 }
 
+// WriteChar writes a single character to the writer.
 func (w *Writer) WriteChar(data string) (int, error) {
 	return w.file.WriteString(data)
 }
 
+// Seek sets the position of the writer.
 func (w *Writer) Seek(position int64, whence int) (int64, error) {
 	return w.file.Seek(position, whence)
 }
 
+// Set the position of the reader to the beginning of the file.
 func (w *Writer) SeekFromBeginning(position int64) (int64, error) {
 	return w.file.Seek(position, io.SeekStart)
 }
 
+// Set the position of the reader to the end of the file.
 func (w *Writer) SeekFromEnd(position int64) (int64, error) {
 	return w.file.Seek(position, io.SeekEnd)
 }
 
+// Set the position of the reader to a specific position in the file.
 func (w *Writer) SeekFromCurrent(position int64) (int64, error) {
 	return w.file.Seek(position, io.SeekCurrent)
 }
 
+// Get the current position of the writer.
 func (w *Writer) Position() (int64, error) {
 	return w.file.Seek(0, io.SeekCurrent)
 }
 
+// Get the size of the file.
 func (w *Writer) Size() (int64, error) {
 	cur, err := w.file.Seek(0, io.SeekCurrent)
 	if err != nil {
@@ -135,6 +148,7 @@ func (w *Writer) Size() (int64, error) {
 	return size, nil
 }
 
+// Close the file.
 func (w *Writer) Close() error {
 	return w.file.Close()
 }

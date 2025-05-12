@@ -29,6 +29,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+// AttachConsole attaches the current process to an existing console.
 func AttachConsole() error {
 	const AttachParentProcess = ^uintptr(0)
 
@@ -50,6 +51,7 @@ func AttachConsole() error {
 
 var wstdin, wstdout, wstderr *os.File //nolint:gochecknoglobals // allowed
 
+// AttachConsole attaches the current process to an existing console.
 func AttachConsoleW() error { //nolint:gocyclo,cyclop // allowed
 	wstdin, wstdout, wstderr = os.Stdin, os.Stdout, os.Stderr
 

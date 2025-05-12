@@ -29,6 +29,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/ansi"
 )
 
+// AllocConsole allocates a new console for the current process.
 func AllocConsole() (aIn, aOut, aErr io.Writer, e error) { //nolint:nonamedreturns // allowed
 	kernal32 := syscall.NewLazyDLL("kernel32.dll")
 	allocConsole := kernal32.NewProc("AllocConsole")

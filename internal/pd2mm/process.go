@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mm
+package pd2mm
 
 import (
 	"path/filepath"
@@ -29,6 +29,7 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
+// Process handles copying files with the given PathSearch.
 func (c Config) Process(ps PathSearch) error {
 	if err := c.process(ps); err != nil {
 		return err
@@ -41,8 +42,9 @@ func (c Config) Process(ps PathSearch) error {
 	return nil
 }
 
+// process handles copying files with the given PathSearch.
 func (c Config) process(search PathSearch) error {
-	directories, err := filesystem.GetTopDirectories(search.Extract)
+	directories, err := filesystem.GetTopDirectories(filesystem.FromCwd(search.Extract))
 	if err != nil {
 		logger.SharedLogger.Debug("Failed to get directories", "path", search.Extract, "err", err)
 		return err
@@ -55,15 +57,16 @@ func (c Config) process(search PathSearch) error {
 	return nil
 }
 
+// Handle include settings for a given path.
 func (c Config) include(path string, search PathSearch) {
-	files := filesystem.GetFiles(path)
+	files := filesystem.GetFiles(filesystem.FromCwd(path))
 
 	for _, file := range files {
 		source := strings.ReplaceAll(file, "\\", "/")
 
 		for _, include := range search.Include {
 			if strings.Contains(source, search.format(include.Path)) {
-				if err := c.copy(source, search.format(include.To), false, search); err != nil {
+				if err := c.copyExpected(source, search.format(include.To), false, search); err != nil {
 					logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.format(include.To), "err", err)
 				}
 			}
@@ -75,6 +78,7 @@ func (c Config) include(path string, search PathSearch) {
 	}
 }
 
+// Handle exclude settings for a given path.
 func (c Config) exclude(path string, search PathSearch) bool {
 	for _, exclude := range search.Exclude {
 		if strings.Contains(path, search.format(exclude)) {
@@ -90,6 +94,7 @@ func (c Config) exclude(path string, search PathSearch) bool {
 	return skip
 }
 
+// Handle expected settings for a given path.
 func (c Config) expects(path string, search PathSearch) (bool, error) {
 	var destination string
 
@@ -101,10 +106,10 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 		}
 
 		if slices.Contains(expect.Path, filesystem.GetFileExtension(source[len(source)-1])) { //nolint:nestif // allowed
-			destination = filepath.Join(search.Export, fixDestination(source, search, expect, false))
+			destination = filepath.Join(search.Output, fixDestination(source, search, expect, false))
 
 			if destination != "" {
-				if err := c.copy(path, destination, false, search); err != nil {
+				if err := c.copyExpected(path, destination, false, search); err != nil {
 					return false, err
 				}
 
@@ -119,7 +124,7 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 					logger.SharedLogger.Fatalf("%v expected %s but it was not found (index -1)", source, expect.Path[0])
 				}
 
-				if err := c.copy(strings.Join(source[:index], "/"), destination, false, search); err != nil {
+				if err := c.copyExpected(strings.Join(source[:index], "/"), destination, false, search); err != nil {
 					return false, err
 				} // path
 
@@ -131,11 +136,12 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 	return false, nil
 }
 
+// Handle non-contextual file copies.
 func (c Config) copies(search PathSearch) error {
 	for _, copy := range search.Copy {
 		logger.SharedLogger.Info(lang.Lang("copying"), "source", search.format(copy.From), "destination", search.format(copy.To))
 
-		if err := filesystem.Copy(search.format(copy.From), search.format(copy.To)); err != nil {
+		if err := copyFile(search.format(copy.From), search.format(copy.To)); err != nil {
 			return err
 		}
 	}
@@ -143,6 +149,7 @@ func (c Config) copies(search PathSearch) error {
 	return nil
 }
 
+// fixDestination fixes the destination path based on the provided PathSearch and Expect data.
 func fixDestination(parts []string, search PathSearch, expect Expect, dir bool) string {
 	// Join initial segments minus the length of expected path.
 	result := strings.Join(parts, "/")
@@ -165,15 +172,16 @@ func fixDestination(parts []string, search PathSearch, expect Expect, dir bool) 
 	base := strings.Join(destination, "/")
 	if dir {
 		base = strings.Join(destination[:len(destination)-expect.Base], "/")
-		return filepath.Join(search.Export, base)
+		return filesystem.FromCwd(filepath.Join(search.Output, base))
 	}
 
-	return base
+	return filesystem.FromCwd(base)
 }
 
-func (c Config) copy(src, dst string, expected bool, search PathSearch) error {
+// copyExpected copies the source file or directory to the destination based on the provided PathSearch.
+func (c Config) copyExpected(src, dest string, expected bool, search PathSearch) error {
 	src = strings.ReplaceAll(src, "\\", "/")
-	dst = strings.ReplaceAll(dst, "\\", "/")
+	dest = strings.ReplaceAll(dest, "\\", "/")
 
 	for _, rename := range search.Rename {
 		pathFmt := search.formatSlice(rename.Path)
@@ -182,32 +190,34 @@ func (c Config) copy(src, dst string, expected bool, search PathSearch) error {
 		parts := strings.Split(src, "/")
 
 		if util.ContainsSubslice(parts, pathFmt) {
-			result := util.ReplaceSubslice(strings.Split(dst, "/"), fromFmt, toFmt)
-			dst = strings.Join(result, "/")
+			result := util.ReplaceSubslice(strings.Split(dest, "/"), fromFmt, toFmt)
+			dest = strings.Join(result, "/")
 		}
 	}
 
 	if expected {
-		return c.copyExpected(src, dst)
+		return c.parseExpectedAndCopy(src, dest)
 	}
 
-	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dst)
+	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
 
-	return filesystem.Copy(src, dst)
+	return copyFile(src, dest)
 }
 
-func (c Config) copyExpected(src, dst string) error {
+// Parse expected file paths and copy them.
+func (c Config) parseExpectedAndCopy(src, dest string) error {
 	parts := strings.Split(src, "/")
 	source := parts[:len(parts)-1]
 
 	// Combine the normalized destination with the source directory name
 	src = strings.Join(source, "/")
-	dst = filepath.Join(dst, source[len(source)-1])
-	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dst)
+	dest = filepath.Join(dest, source[len(source)-1])
+	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
 
-	return filesystem.Copy(src, dst)
+	return copyFile(src, dest)
 }
 
+// Format a slice of paths using the current PathSearch settings.
 func (ps PathSearch) formatSlice(slice []string) []string {
 	result := []string{}
 
@@ -218,10 +228,11 @@ func (ps PathSearch) formatSlice(slice []string) []string {
 	return result
 }
 
+// Replace keywords with relevant PathSearch settings.
 func (ps PathSearch) format(str string) string {
 	format := strings.ReplaceAll(str, "{path}", ps.Path)
+	format = strings.ReplaceAll(format, "{output}", ps.Output)
 	format = strings.ReplaceAll(format, "{extract}", ps.Extract)
-	format = strings.ReplaceAll(format, "{export}", ps.Export)
 
 	return format
 }

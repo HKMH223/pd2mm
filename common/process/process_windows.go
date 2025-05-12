@@ -57,6 +57,7 @@ const (
 	ProcessVMRead           = 0x0010
 )
 
+// Get the window handle process id.
 func GetWindowProcessID(hwnd HWND) (uint32, error) {
 	var pid uint32
 
@@ -69,6 +70,7 @@ func GetWindowProcessID(hwnd HWND) (uint32, error) {
 	return pid, nil
 }
 
+// Get the window handle text length.
 func GetWindowTextLength(hwnd HWND) int {
 	ret, _, _ := procGetWindowTextLength.Call(
 		uintptr(hwnd))
@@ -76,6 +78,7 @@ func GetWindowTextLength(hwnd HWND) int {
 	return int(ret)
 }
 
+// Get the window handle text.
 func GetWindowText(hwnd HWND) (string, error) {
 	txt := GetWindowTextLength(hwnd) + 1
 
@@ -92,6 +95,7 @@ func GetWindowText(hwnd HWND) (string, error) {
 	return syscall.UTF16ToString(buf), nil
 }
 
+// Get the window handle by function name.
 func GetWindow(funcName string) uintptr {
 	proc := user32.NewProc(funcName)
 	hwnd, _, _ := proc.Call()
@@ -99,6 +103,7 @@ func GetWindow(funcName string) uintptr {
 	return hwnd
 }
 
+// Get the process id executable name.
 func GetExecutableName(pid uint32) (string, error) {
 	hproc, _, err := procOpenProcess.Call(
 		ProcessQueryInformation|ProcessVMRead,
@@ -132,6 +137,7 @@ func GetExecutableName(pid uint32) (string, error) {
 	return syscall.UTF16ToString(buf[:ret]), nil
 }
 
+// Get the executable name of the foreground window.
 func GetForegroundWindowExecutableName() (string, error) {
 	if hwnd := GetWindow("GetForegroundWindow"); hwnd != 0 {
 		pid, err := GetWindowProcessID(HWND(hwnd))
@@ -150,6 +156,7 @@ func GetForegroundWindowExecutableName() (string, error) {
 	return "", nil
 }
 
+// Get the title of the foreground window.
 func GetForegroundWindowTitle() (string, error) {
 	if hwnd := GetWindow("GetForegroundWindow"); hwnd != 0 {
 		title, err := GetWindowText(HWND(hwnd))
@@ -163,6 +170,7 @@ func GetForegroundWindowTitle() (string, error) {
 	return "", nil
 }
 
+// Set the hide window attribute.
 func setHideWindowAttr(cmd *exec.Cmd, hideWindow bool) {
 	// cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: 0x08000000}
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: hideWindow} //nolint:exhaustruct // allowed

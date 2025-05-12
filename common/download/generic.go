@@ -24,10 +24,12 @@ import (
 	"net/http"
 )
 
+// Download a file and return the file as an array of bytes.
 func Download(url string) ([]byte, error) {
 	return WithContext(context.TODO(), DefaultDownloadMessenger(), url)
 }
 
+// WithContext is a convenience function that validates the download parameters and then downloads the file.
 func WithContext(ctx context.Context, msg Messenger, url string) ([]byte, error) {
 	if url == "" {
 		return nil, errDownloadURLEmpty

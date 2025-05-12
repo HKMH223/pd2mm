@@ -29,7 +29,8 @@ type EmbeddedFileSystem struct {
 	FS      embed.FS
 }
 
-func (e EmbeddedFileSystem) BytesToMap(data []byte) (map[string]interface{}, error) {
+// BytesToMap converts a byte array into a map[string]any.
+func (e EmbeddedFileSystem) BytesToMap(data []byte) (map[string]any, error) {
 	var b map[string]any
 	if err := json.Unmarshal(data, &b); err != nil {
 		return nil, err
@@ -38,7 +39,8 @@ func (e EmbeddedFileSystem) BytesToMap(data []byte) (map[string]interface{}, err
 	return b, nil
 }
 
-func (e EmbeddedFileSystem) FilenameToMap(name string) (map[string]interface{}, error) {
+// FilenameToMap converts a file in the embedded filesystem into a map[string]any.
+func (e EmbeddedFileSystem) FilenameToMap(name string) (map[string]any, error) {
 	data, err := e.FS.ReadFile(e.Initial + name)
 	if err != nil {
 		return nil, err
@@ -52,6 +54,7 @@ func (e EmbeddedFileSystem) FilenameToMap(name string) (map[string]interface{}, 
 	return b, nil
 }
 
+// FilenameToBytes converts a file in the embedded filesystem into an array of bytes.
 func (e EmbeddedFileSystem) FilenameToBytes(name string) ([]byte, error) {
 	data, err := e.FS.ReadFile(e.Initial + name)
 	if err != nil {

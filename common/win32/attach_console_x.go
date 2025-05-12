@@ -24,12 +24,14 @@ import (
 	"os"
 )
 
+// AttachConsole attaches the current process to an existing console.
 func AttachConsole() error {
 	return nil
 }
 
 var wstdin, wstdout, wstderr *os.File //nolint:unused,gochecknoglobals // allowed
 
+// AttachConsole attaches the current process to an existing console.
 func AttachConsoleW() error {
 	return nil
 }

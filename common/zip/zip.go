@@ -33,6 +33,7 @@ type Messenger struct {
 	AddedFile func(string)
 }
 
+// DefaultZipMessenger returns a default messenger for the Zip function.
 func DefaultZipMessenger() Messenger {
 	return Messenger{
 		AddedFile: func(path string) {
@@ -41,16 +42,18 @@ func DefaultZipMessenger() Messenger {
 	}
 }
 
-func Zip(src string, dst string) error {
-	return WithMessenger(src, dst, DefaultZipMessenger())
+// Zip creates a zip file from the given source directory and destination path.
+func Zip(src, dest string) error {
+	return WithMessenger(src, dest, DefaultZipMessenger())
 }
 
-func WithMessenger(src string, dst string, msg Messenger) error {
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+// WithContext is a convenience function that zips the file.
+func WithMessenger(src, dest string, msg Messenger) error {
+	if err := os.MkdirAll(filepath.Dir(dest), 0o700); err != nil {
 		return err
 	}
 
-	file, err := os.Create(dst)
+	file, err := os.Create(dest)
 	if err != nil {
 		return err
 	}

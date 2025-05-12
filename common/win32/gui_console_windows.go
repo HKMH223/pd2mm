@@ -25,19 +25,20 @@ import (
 	"os"
 )
 
-func GuiConsoleHandle(args []string, minArgs int, cli, gui func(in, out, err io.Writer), console bool) error {
+// WindowConsoleHandle optionally allocated a console to a window process.
+func WindowConsoleHandle(args []string, minArgs int, console, window func(in, out, err io.Writer), isConsole bool) error {
 	if len(args) > minArgs { //nolint:nestif // allowed
 		if err := AttachConsoleW(); err != nil {
 			return err
 		}
 
-		cli(os.Stdin, os.Stdout, os.Stderr)
+		console(os.Stdin, os.Stdout, os.Stderr)
 	} else {
 		var err error
 
 		var cIn, cOut, cErr io.Writer
 
-		if console {
+		if isConsole {
 			cIn, cOut, cErr, err = AllocConsole()
 			if err != nil {
 				return err
@@ -46,7 +47,7 @@ func GuiConsoleHandle(args []string, minArgs int, cli, gui func(in, out, err io.
 			cIn, cOut, cErr = os.Stdin, os.Stdout, os.Stderr
 		}
 
-		gui(cIn, cOut, cErr)
+		window(cIn, cOut, cErr)
 	}
 
 	return nil

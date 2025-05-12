@@ -41,6 +41,9 @@ git config --local user.email "USERNAME@SOMETHING.com"
 | x86    | ❌ | ❌ | ❌ |
 | ARM64  | ❌ | ❌ | ❌ |
 
+## ⚠️ Using AI for Development
+I believe AI can prove beneficial for assisting in development, however, this does not mean you should lean on it to do the heavy lifting for you. Code should be legible, consistent, and maintainable. If you are using AI to assist development of `pd2mm` please take the time to carefully read the guidelines below.
+
 ## Contribution Guidelines
 If you would like to contribute to `pd2mm` please take the time to carefully read the guidelines below.
 

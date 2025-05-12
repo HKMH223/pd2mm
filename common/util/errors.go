@@ -20,7 +20,8 @@ package util
 
 import "log"
 
-func WrapError(fn func() (string, error)) string {
+// WrapError wraps an error and logs it.
+func WrapError(fn func() (any, error)) any {
 	s, err := fn()
 	if err != nil {
 		log.Fatalf("Error: %s", err)

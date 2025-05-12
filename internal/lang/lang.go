@@ -34,6 +34,7 @@ var lang map[string]string //nolint:gochecknoglobals // allowed
 
 var lock = sync.RWMutex{} //nolint:gochecknoglobals // allowed
 
+// SetLanguage sets the language of the program.
 func SetLanguage(languge string) error {
 	lock.Lock()
 	defer lock.Unlock()
@@ -50,6 +51,7 @@ func SetLanguage(languge string) error {
 	return nil
 }
 
+// Lang returns the value of a key in the current language.
 func Lang(key string) string {
 	lock.RLock()
 	defer lock.RUnlock()

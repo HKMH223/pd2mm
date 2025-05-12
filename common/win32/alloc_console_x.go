@@ -25,6 +25,7 @@ import (
 	"os"
 )
 
+// AllocConsole allocates a new console for the current process.
 func AllocConsole() (inA, outA, errA io.Writer, e error) { //nolint:nonamedreturns // allowed
 	return os.Stdin, os.Stdout, os.Stderr, nil
 }

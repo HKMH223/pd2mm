@@ -20,6 +20,7 @@ package util
 
 import "strings"
 
+// MapKeyValuePairs maps key-value pairs from a slice of strings to a map.
 func MapKeyValuePairs(lines []string) (map[string]string, error) {
 	kvps := map[string]string{}
 

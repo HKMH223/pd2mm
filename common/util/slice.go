@@ -20,7 +20,7 @@ package util
 
 import "slices"
 
-func Matches(parts []string, expected []string) int {
+func Matches(parts, expected []string) int {
 	expect := make(map[string]struct{}, len(expected))
 	for _, e := range expected {
 		expect[e] = struct{}{}

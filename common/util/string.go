@@ -20,9 +20,15 @@ package util
 
 import (
 	"bytes"
+	"regexp"
 	"unicode/utf16"
 	"unsafe"
 )
+
+func IsMatch(str []byte, regex string) bool {
+	re := regexp.MustCompile(regex)
+	return re.Match(str)
+}
 
 func StringToBytes(str string) []byte {
 	tmp := []byte(str)

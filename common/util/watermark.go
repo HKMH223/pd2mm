@@ -24,6 +24,7 @@ import (
 	"strings"
 )
 
+// DrawWatermark draws a watermark on the terminal.
 func DrawWatermark(text []string, draw func(string)) {
 	result := []string{}
 
@@ -52,6 +53,7 @@ func DrawWatermark(text []string, draw func(string)) {
 	}
 }
 
+// textLength returns the length of a string in terms of characters.
 func textLength(s string) int {
 	re := regexp.MustCompile(`[\p{Han}\p{Katakana}\p{Hiragana}\p{Hangul}]`)
 	result := re.ReplaceAllString(s, "ab")

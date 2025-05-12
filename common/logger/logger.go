@@ -34,6 +34,7 @@ type MultiLogger struct {
 
 var SharedLogger = NewMultiLogger(os.Stdout) //nolint:gochecknoglobals // allowed
 
+// Create a new MultiLogger.
 func NewMultiLogger(wrs ...io.Writer) *MultiLogger {
 	loggers := new(MultiLogger)
 
@@ -52,58 +53,68 @@ func NewMultiLogger(wrs ...io.Writer) *MultiLogger {
 	return loggers
 }
 
+// Register writers to the SharedLogger.
 func RegisterLogger(wrs ...io.Writer) {
 	SharedLogger = NewMultiLogger(wrs...)
 }
 
+// Write a DEBUG message with key value pairs.
 func (ml *MultiLogger) Debug(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Debug(msg, kvs...)
 	}
 }
 
+// Write a DEBUG message with fmt.Sprintf.
 func (ml *MultiLogger) Debugf(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Debug(fmt.Sprintf(format, a...))
 	}
 }
 
+// Write an INFO message with key value pairs.
 func (ml *MultiLogger) Info(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Info(msg, kvs...)
 	}
 }
 
+// Write an INFO message with fmt.Sprintf.
 func (ml *MultiLogger) Infof(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Info(fmt.Sprintf(format, a...))
 	}
 }
 
+// Write a WARN message with key value pairs.
 func (ml *MultiLogger) Warn(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Warn(msg, kvs...)
 	}
 }
 
+// Write a WARN message with fmt.Sprintf.
 func (ml *MultiLogger) Warnf(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Warn(fmt.Sprintf(format, a...))
 	}
 }
 
+// Write an ERROR message with key value pairs.
 func (ml *MultiLogger) Error(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Error(msg, kvs...)
 	}
 }
 
+// Write an ERROR message with fmt.Sprintf.
 func (ml *MultiLogger) Errorf(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Error(fmt.Sprintf(format, a...))
 	}
 }
 
+// Write a FATAL message with key value pairs.
 func (ml *MultiLogger) Fatal(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Error(msg, kvs...)
@@ -112,6 +123,7 @@ func (ml *MultiLogger) Fatal(msg any, kvs ...any) {
 	os.Exit(1)
 }
 
+// Write a FATAL message with fmt.Sprintf.
 func (ml *MultiLogger) Fatalf(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Error(fmt.Sprintf(format, a...))
@@ -120,12 +132,14 @@ func (ml *MultiLogger) Fatalf(format string, a ...any) {
 	os.Exit(1)
 }
 
+// Write a PRINT message with key value pairs.
 func (ml *MultiLogger) Print(msg any, kvs ...any) {
 	for _, l := range ml.loggers {
 		l.Print(msg, kvs...)
 	}
 }
 
+// Write a PRINT message with fmt.Sprintf.
 func (ml *MultiLogger) Printf(format string, a ...any) {
 	for _, l := range ml.loggers {
 		l.Print(fmt.Sprintf(format, a...))

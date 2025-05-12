@@ -16,17 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mm
+package pd2mm
 
 import (
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 )
 
+// Start starts the extraction and processing of mods.
 func (c Config) Start() {
 	for _, search := range c.Mods {
-		if err := filesystem.DeleteDirectory(search.Export); err != nil {
-			logger.SharedLogger.Warn("Failed to delete directory", "path", search.Export, "err", err)
+		if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Output)); err != nil {
+			logger.SharedLogger.Warn("Failed to delete directory", "path", search.Output, "err", err)
 		}
 	}
 

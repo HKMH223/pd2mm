@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mm
+package pd2mm
 
 import (
 	"encoding/json"
@@ -32,7 +32,7 @@ type Config struct {
 
 type PathSearch struct {
 	Path    string       `json:"path"`
-	Export  string       `json:"export"`
+	Output  string       `json:"output"`
 	Extract string       `json:"extract"`
 	Include []Include    `json:"include"`
 	Exclude []string     `json:"exclude"`
@@ -63,6 +63,7 @@ type Expect struct {
 	Base    int      `json:"base"`
 }
 
+// Read reads the config file at path and returns a Config.
 func Read(path string) (Config, error) {
 	data, err := filesystem.ReadFile(path)
 	if err != nil {
@@ -77,6 +78,7 @@ func Read(path string) (Config, error) {
 	return c, nil
 }
 
+// Write writes the config file at path.
 func Write(path string) error {
 	data, err := json.Marshal(Config{}) //nolint:exhaustruct // allowed
 	if err != nil {

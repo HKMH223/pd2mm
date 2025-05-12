@@ -43,6 +43,7 @@ type DiffLocalData struct {
 	ExistsB string
 }
 
+// HashDirectory returns a map of file paths to their MD5 hashes.
 func HashDirectory(dir string) (map[string]string, error) {
 	hashes := make(map[string]string)
 
@@ -68,6 +69,7 @@ func HashDirectory(dir string) (map[string]string, error) {
 	return hashes, err
 }
 
+// DiffDirectory compares the hashes of files in two directories and returns a list of differences.
 func DiffDirectory(hashesA, hashesB map[string]string, dirA, dirB string) []DiffData {
 	var diff []DiffData
 

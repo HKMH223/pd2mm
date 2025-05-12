@@ -20,6 +20,7 @@ package readwrite
 
 import "unicode/utf16"
 
+// Utf8ToUtf16 converts an UTF-8 string to a UTF-16 array.
 func Utf8ToUtf16(utf8 string) []byte {
 	bytes := []byte(utf8)
 	u16Runes := utf16.Encode([]rune(string(bytes)))
