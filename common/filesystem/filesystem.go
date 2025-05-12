@@ -29,6 +29,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -50,23 +51,20 @@ var ReservedHostnames = []string{ //nolint:gochecknoglobals // allowed
 
 // PathCheckTypeEndsWith checks if the file name ends with a given target.
 func CheckPathForProblemLocations(path string) (bool, PathCheck) {
-	path = TrimPath(path)
+	path = strings.ToLower(strings.ReplaceAll(TrimPath(path), "\\", "/"))
+	parts := strings.Split(path, "/")
 
 	defaultCheck := PathCheck{} //nolint:exhaustruct // allowed
 	defaultPaths := DefaultProblemPaths()
 
 	for _, check := range defaultPaths {
-		if strings.TrimSpace(check.Target) == "" {
-			return true, defaultCheck
-		}
-
 		switch check.Type {
 		case PathCheckTypeEndsWith:
-			if strings.HasSuffix(strings.ToLower(path), strings.ToLower(check.Target)) {
+			if strings.EqualFold(strings.ToLower(parts[len(parts)-1]), strings.ToLower(check.Target)) {
 				return true, check
 			}
 		case PathCheckTypeContains:
-			if strings.Contains(strings.ToLower(path), strings.ToLower(check.Target)) {
+			if slices.Contains(parts, strings.ToLower(check.Target)) {
 				return true, check
 			}
 		case PathCheckTypeDriveRoot:

@@ -19,15 +19,19 @@
 package pd2mm
 
 import (
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/hkmh223/pd2mm/common/errors"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/util"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
+
+type MError = errors.MError
 
 // Process handles copying files with the given PathSearch.
 func (c Config) Process(ps PathSearch) error {
@@ -54,6 +58,12 @@ func (c Config) process(search PathSearch) error {
 		c.include(strings.ReplaceAll(filepath.Join(search.Extract, directory), "\\", "/"), search)
 	}
 
+	if search.Export != "" {
+		if err := copyFile(search.Output, search.Export); err != nil {
+			return &MError{Header: "process", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", search.Output, search.Export), Err: err}
+		}
+	}
+
 	return nil
 }
 
@@ -65,10 +75,12 @@ func (c Config) include(path string, search PathSearch) {
 		source := strings.ReplaceAll(file, "\\", "/")
 
 		for _, include := range search.Include {
-			if strings.Contains(source, search.format(include.Path)) {
-				if err := c.copyExpected(source, search.format(include.To), false, search); err != nil {
-					logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.format(include.To), "err", err)
-				}
+			if !strings.Contains(source, search.format(include.Path)) {
+				continue
+			}
+
+			if err := c.copyExpected(source, search.format(include.To), false, search); err != nil {
+				logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.format(include.To), "err", err)
 			}
 		}
 
@@ -107,29 +119,32 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 
 		if slices.Contains(expect.Path, filesystem.GetFileExtension(source[len(source)-1])) { //nolint:nestif // allowed
 			destination = filepath.Join(search.Output, fixDestination(source, search, expect, false))
-
-			if destination != "" {
-				if err := c.copyExpected(path, destination, false, search); err != nil {
-					return false, err
-				}
-
-				return true, nil
+			if destination == "" {
+				return false, nil
 			}
+
+			if err := c.copyExpected(path, destination, false, search); err != nil {
+				return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", path, destination), Err: err}
+			}
+
+			return true, nil
 		} else if util.Matches(source, expect.Path) == len(expect.Path) {
 			destination = fixDestination(source, search, expect, true)
-
-			if destination != "" {
-				index := slices.Index(source, expect.Path[0])
-				if index == -1 {
-					logger.SharedLogger.Fatalf("%v expected %s but it was not found (index -1)", source, expect.Path[0])
-				}
-
-				if err := c.copyExpected(strings.Join(source[:index], "/"), destination, false, search); err != nil {
-					return false, err
-				} // path
-
-				return true, nil
+			if destination == "" {
+				return false, nil
 			}
+
+			index := slices.Index(source, expect.Path[0])
+			if index == -1 {
+				logger.SharedLogger.Fatalf("%v expected %s but it was not found (index -1)", source, expect.Path[0])
+			}
+
+			src := strings.Join(source[:index], "/")
+			if err := c.copyExpected(src, destination, false, search); err != nil {
+				return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, destination), Err: err}
+			} // path
+
+			return true, nil
 		}
 	}
 
@@ -141,8 +156,9 @@ func (c Config) copies(search PathSearch) error {
 	for _, copy := range search.Copy {
 		logger.SharedLogger.Info(lang.Lang("copying"), "source", search.format(copy.From), "destination", search.format(copy.To))
 
-		if err := copyFile(search.format(copy.From), search.format(copy.To)); err != nil {
-			return err
+		src, dest := search.format(copy.From), search.format(copy.To)
+		if err := copyFile(src, dest); err != nil {
+			return &MError{Header: "copies", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
 	}
 
@@ -185,8 +201,7 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 
 	for _, rename := range search.Rename {
 		pathFmt := search.formatSlice(rename.Path)
-		fromFmt := search.formatSlice(rename.From)
-		toFmt := search.formatSlice(rename.To)
+		fromFmt, toFmt := search.formatSlice(rename.From), search.formatSlice(rename.To)
 		parts := strings.Split(src, "/")
 
 		if util.ContainsSubslice(parts, pathFmt) {
@@ -196,12 +211,18 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 	}
 
 	if expected {
-		return c.parseExpectedAndCopy(src, dest)
+		if err := c.parseExpectedAndCopy(src, dest); err != nil {
+			return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+		}
 	}
 
 	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
 
-	return copyFile(src, dest)
+	if err := copyFile(src, dest); err != nil {
+		return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+	}
+
+	return nil
 }
 
 // Parse expected file paths and copy them.
@@ -210,11 +231,14 @@ func (c Config) parseExpectedAndCopy(src, dest string) error {
 	source := parts[:len(parts)-1]
 
 	// Combine the normalized destination with the source directory name
-	src = strings.Join(source, "/")
-	dest = filepath.Join(dest, source[len(source)-1])
+	src, dest = strings.Join(source, "/"), filepath.Join(dest, source[len(source)-1])
 	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
 
-	return copyFile(src, dest)
+	if err := copyFile(src, dest); err != nil {
+		return &MError{Header: "parseExpectedAndCopy", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+	}
+
+	return nil
 }
 
 // Format a slice of paths using the current PathSearch settings.
@@ -230,9 +254,10 @@ func (ps PathSearch) formatSlice(slice []string) []string {
 
 // Replace keywords with relevant PathSearch settings.
 func (ps PathSearch) format(str string) string {
-	format := strings.ReplaceAll(str, "{path}", ps.Path)
-	format = strings.ReplaceAll(format, "{output}", ps.Output)
-	format = strings.ReplaceAll(format, "{extract}", ps.Extract)
-
-	return format
+	return util.Format(str, map[string]string{
+		"{path}":    ps.Path,
+		"{output}":  ps.Output,
+		"{extract}": ps.Extract,
+		"{export}":  ps.Export,
+	})
 }

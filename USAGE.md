@@ -1,17 +1,18 @@
 # Usage
 Standard usage guide.
 
-```json
+```jsonc
 {
     "mods": [
         {
             "path": "pd2mm/mods", // The storage of mod archives (e.g. pd2mm/mods/MyMod.zip)
-            "export": "pd2mm/export/mods", // Where mods will be exported to. (This is what the game will read)
+            "output": "pd2mm/output/mods", // Where mods will be output to. (This is what the game will read)
             "extract": "pd2mm/extract/mods", // Where mods will be extracted to temporarily.
+            "export": "pd2mm/export/mods", // Export is not considered a temp directory and will only ever copy files to it, never delete.
             "include": [
                 {
                     "path": "MyMod", // The path to look for.
-                    "to": "{export}/MyMod" // Where to copy it to.
+                    "to": "{output}/MyMod" // Where to copy it to.
                 }
             ],
             "exclude": [
@@ -33,10 +34,10 @@ Standard usage guide.
             "copy": [
                 { 
                     // Copy from point a to point b.
-                    //  copy and rename both support variables such as {path}, {export}, {extract}
+                    //  copy and rename both support variables such as {path}, {output}, {extract}
                     //  which will be replaced with the corresponding key in the JSON.
                     "from": "pd2mm/patches/mods/MyMod",
-                    "to": "{export}/MyMod"
+                    "to": "{output}/MyMod"
                 }
             ],
             "rename": [

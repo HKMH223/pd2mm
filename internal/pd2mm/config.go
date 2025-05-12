@@ -34,6 +34,7 @@ type PathSearch struct {
 	Path    string       `json:"path"`
 	Output  string       `json:"output"`
 	Extract string       `json:"extract"`
+	Export  string       `json:"export"`
 	Include []Include    `json:"include"`
 	Exclude []string     `json:"exclude"`
 	Expects []Expect     `json:"expects"`

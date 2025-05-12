@@ -47,8 +47,8 @@ func DefaultProblemPaths() []PathCheck {
 		{Type: PathCheckTypeContains, Target: "DropBox", Action: PathCheckActionDeny},
 		{Type: PathCheckTypeContains, Target: "Google", Action: PathCheckActionDeny},
 		{Type: PathCheckTypeContains, Target: "Program Files", Action: PathCheckActionDeny},
-		{Type: PathCheckTypeContains, Target: "Program Files (x86", Action: PathCheckActionDeny},
-		{Type: PathCheckTypeContains, Target: "windows", Action: PathCheckActionDeny},
+		{Type: PathCheckTypeContains, Target: "Program Files (x86)", Action: PathCheckActionDeny},
+		// {Type: PathCheckTypeContains, Target: "Windows", Action: PathCheckActionDeny},
 		{Type: PathCheckTypeDriveRoot, Target: "", Action: PathCheckActionDeny},
 
 		// Reserved words

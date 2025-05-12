@@ -21,15 +21,27 @@ package util
 import (
 	"bytes"
 	"regexp"
+	"strings"
 	"unicode/utf16"
 	"unsafe"
 )
 
+// Format formats a string with the given replacements.
+func Format(str string, replacements map[string]string) string {
+	for k, v := range replacements {
+		str = strings.ReplaceAll(str, k, v)
+	}
+
+	return str
+}
+
+// IsMatch checks if a string matches a regular expression.
 func IsMatch(str []byte, regex string) bool {
 	re := regexp.MustCompile(regex)
 	return re.Match(str)
 }
 
+// StringToBytes converts a string to bytes.
 func StringToBytes(str string) []byte {
 	tmp := []byte(str)
 	tmp = append(tmp, bytes.Repeat([]byte{0}, 2-(len(tmp)%2))...) //nolint:mnd // allowed
@@ -37,6 +49,7 @@ func StringToBytes(str string) []byte {
 	return tmp
 }
 
+// GetStringFromBytes converts a byte slice to a string.
 func GetStringFromBytes(data []byte, start, end int) string {
 	var cid string
 

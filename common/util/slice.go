@@ -20,6 +20,7 @@ package util
 
 import "slices"
 
+// Matches returns the number of elements in parts that are also present in expected.
 func Matches(parts, expected []string) int {
 	expect := make(map[string]struct{}, len(expected))
 	for _, e := range expected {
@@ -37,6 +38,7 @@ func Matches(parts, expected []string) int {
 	return count
 }
 
+// ReplaceSubslice replaces the first occurrence of a subslice in a slice with another slice.
 func ReplaceSubslice[T comparable](slice, sliceA, sliceB []T) []T {
 	for i := 0; i <= len(slice)-len(sliceA); i++ {
 		if slices.Equal(slice[i:i+len(sliceA)], sliceA) {
@@ -47,6 +49,7 @@ func ReplaceSubslice[T comparable](slice, sliceA, sliceB []T) []T {
 	return slice
 }
 
+// ContainsSubslice checks if a subslice exists in another slice.
 func ContainsSubslice[T comparable](sliceA, sliceB []T) bool {
 	if len(sliceB) == 0 || len(sliceB) > len(sliceA) {
 		return false
@@ -70,6 +73,7 @@ func ContainsSubslice[T comparable](sliceA, sliceB []T) bool {
 	return false
 }
 
+// MoveEntry moves an element from one position to another in a slice.
 func MoveEntry[T comparable](slice []T, entry T, index int) []T {
 	cur := -1
 

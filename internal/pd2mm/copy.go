@@ -31,32 +31,29 @@ import (
 func copyFile(src, dest string) error {
 	return filesystem.Copy(src, dest, copy.Options{Skip: func(_ os.FileInfo, src, dest string) (bool, error) { //nolint:exhaustruct // allowed
 		return pathCheck(src, dest), nil
-	}})
+	}, PermissionControl: copy.AddPermission(0o666)}) //nolint:mnd // allowed
 }
 
 // pathCheck checks if a file is allowed to be copied by the given source and destination paths.
 func pathCheck(src, dest string) bool {
-	if srcResult, srcCheck := filesystem.CheckPathForProblemLocations(src); srcResult {
-		if srcCheck.Action == filesystem.PathCheckActionWarn {
-			logger.SharedLogger.Warn("Problematic path located", "path", src, "type", srcCheck.Type, "target", srcCheck.Target)
-			return false
-		}
+	srcResult, srcCheck := filesystem.CheckPathForProblemLocations(src)
+	destResult, destCheck := filesystem.CheckPathForProblemLocations(dest)
 
-		logger.SharedLogger.Error("Problematic path located", "path", src, "type", srcCheck.Type, "target", srcCheck.Target)
-
-		return true
-	}
-
-	if destResult, destCheck := filesystem.CheckPathForProblemLocations(dest); destResult {
-		if destCheck.Action == filesystem.PathCheckActionWarn {
-			logger.SharedLogger.Error("Problematic path located", "path", dest, "type", destCheck.Type, "target", destCheck.Target)
-			return false
-		}
-
-		logger.SharedLogger.Error("Problematic path located", "path", dest, "type", destCheck.Type, "target", destCheck.Target)
-
-		return true
+	if srcResult || destResult {
+		return !isSafeAction(src, srcCheck) || !isSafeAction(dest, destCheck)
 	}
 
 	return false
+}
+
+// Log based off of the PathCheck action type, returns a value based on whether to still copy files based off of the action.
+func isSafeAction(result string, check filesystem.PathCheck) bool {
+	switch check.Action {
+	case filesystem.PathCheckActionWarn:
+		logger.SharedLogger.Warn("Problematic path located", "path", result, "type", check.Type, "target", check.Target)
+		return true
+	default:
+		logger.SharedLogger.Error("Problematic path located", "path", result, "type", check.Type, "target", check.Target)
+		return false
+	}
 }
