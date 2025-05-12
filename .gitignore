@@ -1,0 +1,12 @@
+build
+target
+*.exe
+*.obj
+*.bin
+*.o
+.releases
+*.syso
+*_log.txt
+
+pd2mm/*
+!pd2mm/.gitkeep

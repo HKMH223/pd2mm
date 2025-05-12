@@ -1,0 +1,162 @@
+version: "2"
+linters:
+  disable:
+    - unused
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - err113
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - fatcontext
+    - forcetypeassert
+    - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - grouper
+    - importas
+    - inamedparam
+    - interfacebloat
+    - intrange
+    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - testpackage
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wsl
+    - zerologlint
+  settings:
+    depguard:
+      rules:
+        prevent_unmaintained_packages:
+          allow:
+            - $gostd
+            - golang.org/x/text/language
+            - golang.org/x/sys/windows
+            - github.com/otiai10/copy
+            - github.com/tidwall/gjson
+            - github.com/tidwall/jsonc
+            - github.com/vmihailenco/msgpack
+            - github.com/hkmh223/pd2mm
+            - github.com/charmbracelet/log
+            - github.com/Xuanwo/go-locale
+    funlen:
+      lines: 100
+      statements: 50
+    gocyclo:
+      min-complexity: 15
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+      ignore-rules:
+        - spectre
+    mnd:
+      ignored-numbers:
+        - "0o600"
+        - "0o700"
+    nolintlint:
+      require-explanation: true
+      require-specific: false
+      allow-unused: false
+    revive:
+      confidence: 0
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - common/ansi
+      - thirdparty/
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/golang-templates/seed
+  exclusions:
+    generated: lax
+    paths:
+      - thirdparty/
+      - third_party$
+      - builtin$
+      - examples$
