@@ -26,7 +26,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/download"
 )
 
-const testURL = "https://raw.githubusercontent.com/hkmh223/pd2mm/main/LICENSE"
+const testURL = "https://raw.githubusercontent.com/HKMH223/pd2mm/refs/heads/main/LICENSE"
 
 func TestGenericDownload(t *testing.T) {
 	t.Parallel()
