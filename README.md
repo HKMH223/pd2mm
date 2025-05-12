@@ -1,7 +1,7 @@
 # pd2mm
 A command-line Payday 2 mod manager.
 
-This is tool will require trial and error to get the effect you want. If you do not feel comfortable using this, please use [Myth Mod Manager](https://github.com/Wolfmyths/Myth-Mod-Manager)
+This is a tool that will require trial and error to get the effect you want. If you do not feel comfortable using this, please use [Myth Mod Manager](https://github.com/Wolfmyths/Myth-Mod-Manager)
 
 > [!Warning]
 > #### Usage: [USAGE.md](./USAGE.md)
