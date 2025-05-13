@@ -36,7 +36,7 @@ type PathSearch struct {
 	Extract string       `json:"extract"`
 	Export  string       `json:"export"`
 	Include []Include    `json:"include"`
-	Exclude []string     `json:"exclude"`
+	Exclude [][]string   `json:"exclude"`
 	Expects []Expect     `json:"expects"`
 	Copy    []PathCopy   `json:"copy"`
 	Rename  []PathRename `json:"rename"`
@@ -59,9 +59,10 @@ type Include struct {
 }
 
 type Expect struct {
-	Path    []string `json:"path"`
-	Require []string `json:"require"`
-	Base    int      `json:"base"`
+	Path      []string `json:"path"`
+	Require   []string `json:"require"`
+	Exclusive bool     `json:"exclusive"`
+	Base      int      `json:"base"`
 }
 
 // Read reads the config file at path and returns a Config.

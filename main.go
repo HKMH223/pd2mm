@@ -22,11 +22,11 @@ import (
 	"os"
 	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/util"
-	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
 var (
@@ -58,7 +58,7 @@ func main() {
 
 	logger.SharedLogger = logger.NewMultiLogger(file, os.Stdout)
 
-	util.DrawWatermark([]string{"pd2mm"}, func(s string) {
+	util.DrawWatermark([]string{"pd2mm", "This work is free of charge", "If you paid money, you were scammed"}, func(s string) {
 		logger.SharedLogger.Info(s)
 	})
 
@@ -67,20 +67,14 @@ func main() {
 		return
 	}
 
-	if flags.Config == "" {
-		logger.SharedLogger.Error("Flag 'config' cannot be nil or empty")
+	if util.IsFlagPassed("config") {
+		run(flags.Config)
+
 		return
 	}
 
-	if !filesystem.Exists(flags.Config) {
-		if err := pd2mm.Write(flags.Config); err != nil {
-			logger.SharedLogger.Error("Failed to write configuration file", "err", err)
-		}
-	}
-
-	if c, err := pd2mm.Read(flags.Config); err == nil {
-		c.Start()
-	} else {
-		logger.SharedLogger.Error("Failed to read configuration file", "err", err)
+	p := tea.NewProgram(initialModel())
+	if _, err := p.Run(); err != nil {
+		logger.SharedLogger.Fatal("Failed to run program", err)
 	}
 }

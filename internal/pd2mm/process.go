@@ -27,6 +27,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/errors"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/common/safe"
 	"github.com/hkmh223/pd2mm/common/util"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
@@ -39,7 +40,7 @@ func (c Config) Process(ps PathSearch) error {
 		return err
 	}
 
-	if err := c.copies(ps); err != nil {
+	if err := c.copyAdditional(ps); err != nil {
 		return err
 	}
 
@@ -55,7 +56,7 @@ func (c Config) process(search PathSearch) error {
 	}
 
 	for _, directory := range directories {
-		c.include(strings.ReplaceAll(filepath.Join(search.Extract, directory), "\\", "/"), search)
+		c.checkIncludeData(strings.ReplaceAll(filepath.Join(search.Extract, directory), "\\", "/"), search)
 	}
 
 	if search.Export != "" {
@@ -67,38 +68,40 @@ func (c Config) process(search PathSearch) error {
 	return nil
 }
 
-// Handle include settings for a given path.
-func (c Config) include(path string, search PathSearch) {
+// Handle checkIncludeData settings for a given path.
+func (c Config) checkIncludeData(path string, search PathSearch) {
 	files := filesystem.GetFiles(filesystem.FromCwd(path))
 
 	for _, file := range files {
 		source := strings.ReplaceAll(file, "\\", "/")
 
 		for _, include := range search.Include {
-			if !strings.Contains(source, search.format(include.Path)) {
+			if !strings.Contains(source, search.formatString(include.Path)) {
 				continue
 			}
 
-			if err := c.copyExpected(source, search.format(include.To), false, search); err != nil {
-				logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.format(include.To), "err", err)
+			if err := c.copyExpected(source, search.formatString(include.To), false, search); err != nil {
+				logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.formatString(include.To), "err", err)
 			}
 		}
 
-		if c.exclude(source, search) {
+		if c.checkExcludeData(source, search) {
 			break
 		}
 	}
 }
 
-// Handle exclude settings for a given path.
-func (c Config) exclude(path string, search PathSearch) bool {
+// Handle checkExcludeData settings for a given path.
+func (c Config) checkExcludeData(path string, search PathSearch) bool {
+	parts := strings.Split(strings.ReplaceAll(path, "\\", "/"), "/")
+
 	for _, exclude := range search.Exclude {
-		if strings.Contains(path, search.format(exclude)) {
+		if util.ContainsSubslice(parts, search.formatSlice(exclude)) {
 			return false
 		}
 	}
 
-	skip, err := c.expects(path, search)
+	skip, err := c.checkExpectsData(path, search)
 	if err != nil {
 		logger.SharedLogger.Fatal("Failed to copy expected paths", "err", err)
 	}
@@ -107,9 +110,7 @@ func (c Config) exclude(path string, search PathSearch) bool {
 }
 
 // Handle expected settings for a given path.
-func (c Config) expects(path string, search PathSearch) (bool, error) {
-	var destination string
-
+func (c Config) checkExpectsData(path string, search PathSearch) (bool, error) {
 	source := strings.Split(path, "/")
 
 	for _, expect := range search.Expects {
@@ -117,50 +118,70 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 			continue
 		}
 
-		if slices.Contains(expect.Path, filesystem.GetFileExtension(source[len(source)-1])) { //nolint:nestif // allowed
-			destination = filepath.Join(search.Output, fixDestination(source, search, expect, false))
-			if destination == "" {
-				return false, nil
-			}
-
-			destination = filesystem.FromCwd(destination)
-
-			if err := c.copyExpected(path, destination, false, search); err != nil {
-				return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", path, destination), Err: err}
-			}
-
-			return true, nil
+		if slices.Contains(expect.Path, filesystem.GetFileExtension(safe.Slice(source, len(source)-1))) {
+			return c.expectedIsFile(source, search, expect)
 		} else if util.Matches(source, expect.Path) == len(expect.Path) {
-			destination = fixDestination(source, search, expect, true)
-			if destination == "" {
-				return false, nil
-			}
-
-			destination = filesystem.FromCwd(destination)
-
-			index := slices.Index(source, expect.Path[0])
-			if index == -1 {
-				logger.SharedLogger.Fatalf("%v expected %s but it was not found (index -1)", source, expect.Path[0])
-			}
-
-			src := strings.Join(source[:index], "/")
-			if err := c.copyExpected(src, destination, false, search); err != nil {
-				return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, destination), Err: err}
-			} // path
-
-			return true, nil
+			return c.expectedIsDirectory(source, search, expect)
 		}
 	}
 
 	return false, nil
 }
 
-// Handle non-contextual file copies.
-func (c Config) copies(search PathSearch) error {
-	for _, copy := range search.Copy {
-		logger.SharedLogger.Info(lang.Lang("copying"), "source", search.format(copy.From), "destination", search.format(copy.To))
+// Handle expected data as a file.
+func (c Config) expectedIsFile(source []string, search PathSearch, expect Expect) (bool, error) {
+	path := strings.Join(source, "/")
 
-		src, dest := search.format(copy.From), search.format(copy.To)
+	destination := filepath.Join(search.Output, fixDestination(source, search, expect, false))
+	if destination == "" {
+		return false, nil
+	}
+
+	destination = strings.ReplaceAll(filesystem.FromCwd(destination), "\\", "/")
+
+	if util.ContainsSubslice(source, expect.Require) && util.ContainsSubslice(strings.Split(destination, "/"), expect.Require) {
+		path = strings.Join(safe.Range(source, 0, len(source)-len(expect.Require)), "/")
+
+		dest := strings.Split(destination, "/")
+		destination = strings.Join(safe.Range(dest, 0, len(dest)-len(expect.Require)), "/")
+	}
+
+	if err := c.copyExpected(path, destination, false, search); err != nil {
+		return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", path, destination), Err: err}
+	}
+
+	return true, nil
+}
+
+// Handle expected data as a directory.
+func (c Config) expectedIsDirectory(source []string, search PathSearch, expect Expect) (bool, error) {
+	destination := fixDestination(source, search, expect, true)
+	if destination == "" {
+		return false, nil
+	}
+
+	destination = filesystem.FromCwd(destination)
+
+	index := safe.HasIndex(source, safe.Slice(expect.Path, 0))
+	src := strings.Join(safe.Range(source, 0, index), "/")
+
+	if expect.Exclusive {
+		src = strings.Join(safe.Range(source, 0, index+1), "/")
+	}
+
+	if err := c.copyExpected(src, destination, false, search); err != nil {
+		return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, destination), Err: err}
+	}
+
+	return true, nil
+}
+
+// Handle non-contextual file copyAdditional.
+func (c Config) copyAdditional(search PathSearch) error {
+	for _, copy := range search.Copy {
+		logger.SharedLogger.Info(lang.Lang("copying"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
+
+		src, dest := search.formatString(copy.From), search.formatString(copy.To)
 		if err := copyFile(src, dest); err != nil {
 			return &MError{Header: "copies", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
@@ -171,28 +192,23 @@ func (c Config) copies(search PathSearch) error {
 
 // fixDestination fixes the destination path based on the provided PathSearch and Expect data.
 func fixDestination(parts []string, search PathSearch, expect Expect, dir bool) string {
-	// Join initial segments minus the length of expected path.
 	result := strings.Join(parts, "/")
 
 	if dir {
-		index := slices.Index(parts, expect.Path[0])
-		if index == -1 {
-			logger.SharedLogger.Fatalf("%v expected %s but it was not found (index -1)", parts, expect.Path[0])
-		}
+		index := safe.HasIndex(parts, safe.Slice(expect.Path, 0))
+		result = strings.Join(safe.Range(parts, 0, index), "/")
 
-		result = strings.Join(parts[:index], "/") // parts[:len(parts)-len(ex.Path)]
+		if expect.Exclusive {
+			result = strings.Join(safe.Range(parts, 0, index+1), "/")
+		}
 	}
 
 	results := strings.Split(result, "/")
-
-	// Append last element of newParts to the expected requirements.
-	destination := append(expect.Require, results[len(results)-1]) //nolint:gocritic // allowed
-
-	// Join finalParts minus the length of expected base path.
+	destination := append(expect.Require, safe.Slice(results, len(results)-1)) //nolint:gocritic // allowed
 	base := strings.Join(destination, "/")
 
 	if dir {
-		base = strings.Join(destination[:len(destination)-expect.Base], "/")
+		base = strings.Join(safe.Range(destination, 0, len(destination)-expect.Base), "/")
 		return filepath.Join(search.Output, base)
 	}
 
@@ -233,10 +249,10 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 // Parse expected file paths and copy them.
 func (c Config) parseExpectedAndCopy(src, dest string) error {
 	parts := strings.Split(src, "/")
-	source := parts[:len(parts)-1]
+	source := safe.Range(parts, 0, len(parts)-1)
 
 	// Combine the normalized destination with the source directory name
-	src, dest = strings.Join(source, "/"), filepath.Join(dest, source[len(source)-1])
+	src, dest = strings.Join(source, "/"), filepath.Join(dest, safe.Slice(source, len(source)-1))
 	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
 
 	if err := copyFile(src, dest); err != nil {
@@ -251,14 +267,14 @@ func (ps PathSearch) formatSlice(slice []string) []string {
 	result := []string{}
 
 	for _, item := range slice {
-		result = append(result, ps.format(item))
+		result = append(result, ps.formatString(item))
 	}
 
 	return result
 }
 
 // Replace keywords with relevant PathSearch settings.
-func (ps PathSearch) format(str string) string {
+func (ps PathSearch) formatString(str string) string {
 	return util.Format(str, map[string]string{
 		"{path}":    ps.Path,
 		"{output}":  ps.Output,

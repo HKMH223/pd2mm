@@ -16,7 +16,9 @@ Standard usage guide.
                 }
             ],
             "exclude": [
-                "MyMod/MyOtherPath", // A path to exclude.
+                [
+                    "MyMod/MyOtherPath"
+                ], // A path to exclude.
             ],
             "expects": [
                 {
@@ -27,6 +29,7 @@ Standard usage guide.
                         "partA", 
                         "partB"
                     ],
+                    "exclusive": false, // If exclusive is true, it can only copy the expected path and not surrounding files.
                     "base": 0 // [ADVANCED] - The root path index.
                 }
             ],

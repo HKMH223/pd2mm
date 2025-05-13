@@ -20,6 +20,7 @@ package util
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"slices"
 	"strings"
@@ -28,6 +29,19 @@ import (
 const BinSize int = 2
 
 var ErrNoFunctionName = errors.New("no function name")
+
+// IsFlagPassed returns true if the flag is passed.
+func IsFlagPassed(name string) bool {
+	found := false
+
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+
+	return found
+}
 
 // NewCommand returns a new command from the provided arguments.
 func NewCommand(args []string, name string, count int) ([]string, error) {

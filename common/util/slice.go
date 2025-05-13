@@ -18,7 +18,9 @@
 
 package util
 
-import "slices"
+import (
+	"slices"
+)
 
 // Matches returns the number of elements in parts that are also present in expected.
 func Matches(parts, expected []string) int {

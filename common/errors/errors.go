@@ -27,5 +27,5 @@ type MError struct {
 }
 
 func (e *MError) Error() string {
-	return fmt.Sprintf("[%s] %s: %v", e.Header, e.Message, e.Err)
+	return fmt.Sprintf("[%s] %s\n- %v", e.Header, e.Message, e.Err)
 }
