@@ -6,7 +6,7 @@ require (
 	github.com/Xuanwo/go-locale v1.1.3
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.5
-	github.com/charmbracelet/log v0.4.2-0.20250428120452-0e0124d8e155
+	github.com/charmbracelet/log v0.4.2
 	github.com/mattn/go-isatty v0.0.20
 	github.com/otiai10/copy v1.14.1
 	github.com/tidwall/gjson v1.18.0
