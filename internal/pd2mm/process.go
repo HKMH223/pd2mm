@@ -123,6 +123,8 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 				return false, nil
 			}
 
+			destination = filesystem.FromCwd(destination)
+
 			if err := c.copyExpected(path, destination, false, search); err != nil {
 				return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", path, destination), Err: err}
 			}
@@ -133,6 +135,8 @@ func (c Config) expects(path string, search PathSearch) (bool, error) {
 			if destination == "" {
 				return false, nil
 			}
+
+			destination = filesystem.FromCwd(destination)
 
 			index := slices.Index(source, expect.Path[0])
 			if index == -1 {
@@ -186,12 +190,13 @@ func fixDestination(parts []string, search PathSearch, expect Expect, dir bool) 
 
 	// Join finalParts minus the length of expected base path.
 	base := strings.Join(destination, "/")
+
 	if dir {
 		base = strings.Join(destination[:len(destination)-expect.Base], "/")
-		return filesystem.FromCwd(filepath.Join(search.Output, base))
+		return filepath.Join(search.Output, base)
 	}
 
-	return filesystem.FromCwd(base)
+	return base
 }
 
 // copyExpected copies the source file or directory to the destination based on the provided PathSearch.
