@@ -24,20 +24,20 @@ import (
 )
 
 // Start starts the extraction and processing of mods.
-func (c Config) Start() {
-	for _, search := range c.Mods {
+func (f Flags) Start(conf Config) {
+	for _, search := range conf.Mods {
 		if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Output)); err != nil {
 			logger.SharedLogger.Warn("Failed to delete directory", "path", search.Output, "err", err)
 		}
 	}
 
-	for _, search := range c.Mods {
-		if err := Extract(search); err != nil {
+	for _, search := range conf.Mods {
+		if err := f.Extract(search); err != nil {
 			logger.SharedLogger.Error("Failed to extract mods", "err", err)
 			continue
 		}
 
-		if err := c.Process(search); err != nil {
+		if err := conf.Process(search); err != nil {
 			logger.SharedLogger.Error("Failed to process mods", "err", err)
 			continue
 		}

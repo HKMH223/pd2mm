@@ -109,9 +109,6 @@ linters:
             - github.com/hkmh223/pd2mm
             - github.com/charmbracelet/log
             - github.com/Xuanwo/go-locale
-            - github.com/charmbracelet/bubbletea
-            - github.com/charmbracelet/textinput
-            - github.com/charmbracelet/bubbles/textinput
     funlen:
       lines: 100
       statements: 50

@@ -401,6 +401,16 @@ func GetDirectories(path string) []string {
 
 // Get all top level directories at the specified path and return as a slice.
 func GetTopDirectories(path string) ([]string, error) {
+	return getTopEntries(path, true)
+}
+
+// Get all top level files at the specified path and return as a slice.
+func GetTopFiles(path string) ([]string, error) {
+	return getTopEntries(path, false)
+}
+
+// Get all top level files or directories at the specified path and return as a slice.
+func getTopEntries(path string, isDir bool) ([]string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -409,7 +419,9 @@ func GetTopDirectories(path string) ([]string, error) {
 	var directories []string
 
 	for _, entry := range entries {
-		if entry.IsDir() {
+		if isDir && entry.IsDir() {
+			directories = append(directories, entry.Name())
+		} else if !isDir && !entry.IsDir() {
 			directories = append(directories, entry.Name())
 		}
 	}

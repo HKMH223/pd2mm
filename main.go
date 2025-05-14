@@ -22,11 +22,9 @@ import (
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
-	"github.com/hkmh223/pd2mm/common/util"
 )
 
 var (
@@ -49,32 +47,12 @@ func openLog() *os.File { //nolint:mnd // allowed
 }
 
 func main() {
-	file := openLog()
+	logFile := openLog()
 	defer func() {
-		if err := file.Close(); err != nil {
+		if err := logFile.Close(); err != nil {
 			panic(err)
 		}
 	}()
 
-	logger.SharedLogger = logger.NewMultiLogger(file, os.Stdout)
-
-	util.DrawWatermark([]string{"pd2mm", "This work is free of charge", "If you paid money, you were scammed"}, func(s string) {
-		logger.SharedLogger.Info(s)
-	})
-
-	if flags.Version {
-		version()
-		return
-	}
-
-	if util.IsFlagPassed("config") {
-		run(flags.Config)
-
-		return
-	}
-
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
-		logger.SharedLogger.Fatal("Failed to run program", err)
-	}
+	StartApp(logFile)
 }

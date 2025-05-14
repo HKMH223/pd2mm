@@ -16,10 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package cli
+package benchmark
 
-type Flags struct {
-	Version bool
-	Config  string
-	Lang    string
+import "time"
+
+// TimerWithResult with result.
+//
+//nolint:ireturn // allowed
+func TimerWithResult[T any](fn func() (T, error), methodName string, caller func(string, string)) (T, error) {
+	start := time.Now()
+	result, err := fn()
+	elapsed := time.Since(start)
+	caller(methodName, elapsed.String())
+
+	return result, err
+}
+
+// TimeAsync without result.
+func Timer(fn func() error, methodName string, caller func(string, string)) error {
+	start := time.Now()
+	err := fn()
+	elapsed := time.Since(start)
+	caller(methodName, elapsed.String())
+
+	return err
 }

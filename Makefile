@@ -25,19 +25,19 @@ deadcode:
 syso:
 	windres pd2mm.rc -O coff -o pd2mm.syso
 
-pd2mm-linux: lint syso
+pd2mm-linux: fmt
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO_BUILD) -o pd2mm-linux
 
-pd2mm-linux-arm64: lint syso
+pd2mm-linux-arm64: fmt
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GO_BUILD) -o pd2mm-linux-arm64
 
-pd2mm-darwin: lint syso
+pd2mm-darwin: fmt
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO_BUILD) -o pd2mm-darwin
 
-pd2mm-darwin-arm64: lint syso
+pd2mm-darwin-arm64: fmt
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GO_BUILD) -o pd2mm-darwin-arm64
 
-pd2mm-windows: lint syso
+pd2mm-windows: fmt
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO_BUILD) -o pd2mm-windows.exe
 
 clean:

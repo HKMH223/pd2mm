@@ -18,7 +18,15 @@
 
 package sevenzip
 
-type Options struct {
+type ExtractionOptions struct {
+	HideWindow bool
+	Relative   bool
+}
+
+type CompressionOptions struct {
+	HideWindow  bool
+	RedirectStd bool
+
 	FormatFormat   string
 	Level          string
 	Method         string
@@ -29,9 +37,19 @@ type Options struct {
 	Memory         string
 }
 
-// getDefaultOptions returns the default options for 7zip.
-func getDefaultOptions() Options {
-	return Options{
+// getDefaultExtractionOptions returns the default options for 7zip.
+func getDefaultExtractionOptions() ExtractionOptions {
+	return ExtractionOptions{
+		HideWindow: true,
+		Relative:   true,
+	}
+}
+
+// getDefaultCompressionOptions returns the default options for 7zip.
+func getDefaultCompressionOptions() CompressionOptions {
+	return CompressionOptions{
+		HideWindow:     true,
+		RedirectStd:    true,
 		FormatFormat:   "7z",
 		Level:          "-mx9",
 		Method:         "-m0=lzma2",
@@ -43,9 +61,20 @@ func getDefaultOptions() Options {
 	}
 }
 
-// assureOptions ensures that the provided options are valid.
-func assureOptions(opts ...Options) Options {
-	defopts := getDefaultOptions()
+// assureExtractionOptions ensures that the provided options are valid.
+func assureExtractionOptions(opts ...ExtractionOptions) ExtractionOptions {
+	defopts := getDefaultExtractionOptions()
+
+	if len(opts) == 0 {
+		return defopts
+	}
+
+	return opts[0]
+}
+
+// assureCompressionOptions ensures that the provided options are valid.
+func assureCompressionOptions(opts ...CompressionOptions) CompressionOptions {
+	defopts := getDefaultCompressionOptions()
 
 	if len(opts) == 0 {
 		return defopts

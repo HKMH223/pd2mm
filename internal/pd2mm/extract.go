@@ -19,6 +19,8 @@
 package pd2mm
 
 import (
+	"runtime"
+
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/sevenzip"
@@ -26,25 +28,36 @@ import (
 )
 
 // Extract extracts the contents of an archive to a specified directory.
-func Extract(search PathSearch) error {
+func (f Flags) Extract(search PathSearch) error {
 	if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Extract)); err != nil {
 		logger.SharedLogger.Warn("Failed to delete directory", "path", search.Extract, "err", err)
 	}
 
 	source := filesystem.FromCwd(search.Path)
 	destination := filesystem.FromCwd(search.Extract)
-	logger.SharedLogger.Info(lang.Lang("extracting"), "source", source, "destination", destination)
+	logger.SharedLogger.Info(lang.Lang("extractingNotify"), "source", source, "destination", destination)
 
-	return extract(source, destination)
+	return f.extract(source, destination)
 }
 
 // extract extracts the contents of an archive to a specified directory.
-func extract(src, dest string) error {
+func (f Flags) extract(src, dest string) error {
 	files := filesystem.GetFiles(src)
 
+	bin := filesystem.Combine(f.Bin, sevenzip.LinuxName)
+	if runtime.GOOS == "windows" {
+		bin = filesystem.Combine(f.Bin, sevenzip.WindowsName)
+	}
+
 	for _, file := range files {
-		if _, err := sevenzip.Extract(file, dest, false); err != nil {
-			return err
+		if filesystem.Exists(bin) {
+			if _, err := sevenzip.ExtractWithBin(file, dest, bin, false); err != nil {
+				return err
+			}
+		} else {
+			if _, err := sevenzip.Extract(file, dest, false, sevenzip.ExtractionOptions{HideWindow: true, Relative: false}); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -39,7 +39,9 @@ func HasIndex[S ~[]E, E comparable](s S, v E) int {
 // Slice bounds checks to check if a slice is within bounds.
 // If the slice is out of bounds, an error will be logged and the program will exit.
 // Otherwise, the slice will be returned.
-func Slice[T any](parts []T, index int) T { //nolint:ireturn // allowed
+//
+//nolint:ireturn // allowed
+func Slice[T any](parts []T, index int) T {
 	return RangeWithCaller(parts, index, index+1, defaultCaller)[0] // There will only ever be one element in the returned slice.
 }
 
@@ -53,7 +55,9 @@ func Range[T any](parts []T, start, end int) []T {
 // SliceWithCaller bounds checks to check if a slice is within bounds.
 // If the slice is out of bounds, an error will be logged and the program will exit.
 // Otherwise, the slice will be returned.
-func SliceWithCaller[T any](parts []T, index int, caller func(string)) T { //nolint:ireturn // allowed
+//
+//nolint:ireturn // allowed
+func SliceWithCaller[T any](parts []T, index int, caller func(string)) T {
 	return RangeWithCaller(parts, index, index+1, caller)[0] // There will only ever be one element in the returned slice.
 }
 

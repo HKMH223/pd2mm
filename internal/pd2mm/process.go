@@ -177,9 +177,11 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect E
 }
 
 // Handle non-contextual file copyAdditional.
+//
+//nolint:lll // allowed
 func (c Config) copyAdditional(search PathSearch) error {
 	for _, copy := range search.Copy {
-		logger.SharedLogger.Info(lang.Lang("copying"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
+		logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
 
 		src, dest := search.formatString(copy.From), search.formatString(copy.To)
 		if err := copyFile(src, dest); err != nil {
@@ -237,7 +239,7 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 		}
 	}
 
-	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
+	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
 	if err := copyFile(src, dest); err != nil {
 		return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
@@ -253,7 +255,7 @@ func (c Config) parseExpectedAndCopy(src, dest string) error {
 
 	// Combine the normalized destination with the source directory name
 	src, dest = strings.Join(source, "/"), filepath.Join(dest, safe.Slice(source, len(source)-1))
-	logger.SharedLogger.Info(lang.Lang("copying"), "source", src, "destination", dest)
+	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
 	if err := copyFile(src, dest); err != nil {
 		return &MError{Header: "parseExpectedAndCopy", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}

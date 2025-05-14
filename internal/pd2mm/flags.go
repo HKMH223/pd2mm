@@ -16,20 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package lang
+package pd2mm
 
-var En = map[string]string{ //nolint:gochecknoglobals // allowed
-	// General
-	"programName":       "pd2mm",
-	"versionUsage":      "The program version",
-	"configUsage":       "The config file path",
-	"languageNotFound":  "Language not found",
-	"extractingNotify":  "... EXTRACTING",
-	"copyingNotify":     "... COPYING",
-	"startingNotify":    "... STARTING",
-	"doneNotify":        "... DONE",
-	"errorNotify":       "ERROR:",
-	"defaultConfigPath": "pd2mm/pd2.json",
-	"watermarkPart1":    "This work is free of charge",
-	"watermarkPart2":    "If you paid money, you were scammed",
+type Flags struct {
+	Version bool
+	Config  string
+	Lang    string
+	Bin     string
 }

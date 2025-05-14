@@ -21,21 +21,23 @@ package main
 import (
 	"flag"
 
+	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
-	"github.com/hkmh223/pd2mm/internal/cli"
 	"github.com/hkmh223/pd2mm/internal/lang"
+	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
 var (
-	flags    *cli.Flags = NewFlags() //nolint:gochecknoglobals // allowed
-	defaults            = cli.Flags{ //nolint:gochecknoglobals // allowed
+	flags    *pd2mm.Flags = NewFlags()   //nolint:gochecknoglobals // allowed
+	defaults              = pd2mm.Flags{ //nolint:gochecknoglobals // allowed
 		Version: false,
-		Config:  "pd2mm/config.json",
+		Config:  lang.Lang("defaultConfigPath"),
 		Lang:    "en",
+		Bin:     filesystem.Combine(lang.Lang("programName"), "bin"),
 	}
 )
 
-func NewFlags() *cli.Flags {
+func NewFlags() *pd2mm.Flags {
 	return &defaults
 }
 
