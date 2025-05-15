@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pd2mm
+package io
 
 import (
 	"runtime"
@@ -24,11 +24,12 @@ import (
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/sevenzip"
+	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
 // Extract extracts the contents of an archive to a specified directory.
-func (f Flags) Extract(search PathSearch) error {
+func Extract(flags data.Flags, search data.PathSearch) error {
 	if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Extract)); err != nil {
 		logger.SharedLogger.Warn("Failed to delete directory", "path", search.Extract, "err", err)
 	}
@@ -37,16 +38,16 @@ func (f Flags) Extract(search PathSearch) error {
 	destination := filesystem.FromCwd(search.Extract)
 	logger.SharedLogger.Info(lang.Lang("extractingNotify"), "source", source, "destination", destination)
 
-	return f.extract(source, destination)
+	return extract(flags, source, destination)
 }
 
 // extract extracts the contents of an archive to a specified directory.
-func (f Flags) extract(src, dest string) error {
+func extract(flags data.Flags, src, dest string) error {
 	files := filesystem.GetFiles(src)
 
-	bin := filesystem.Combine(f.Bin, sevenzip.LinuxName)
+	bin := filesystem.Combine(flags.Bin, sevenzip.LinuxName)
 	if runtime.GOOS == "windows" {
-		bin = filesystem.Combine(f.Bin, sevenzip.WindowsName)
+		bin = filesystem.Combine(flags.Bin, sevenzip.WindowsName)
 	}
 
 	for _, file := range files {

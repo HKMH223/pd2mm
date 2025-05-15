@@ -19,12 +19,11 @@
 package main
 
 import (
-	"os"
 	"strings"
 
-	"github.com/charmbracelet/log"
-	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/internal/data"
+	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
 var (
@@ -37,17 +36,8 @@ func version() {
 	logger.SharedLogger.Info("version", "go", strings.TrimPrefix(buildOn, "go version "), "revision", gitHash, "date", buildDate)
 }
 
-func openLog() *os.File { //nolint:mnd // allowed
-	file, err := os.OpenFile(filesystem.GetRelativePath("pd2mm_log.txt"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return file
-}
-
 func main() {
-	logFile := openLog()
+	logFile := pd2mm.OpenLogFile(*data.Flag)
 	defer func() {
 		if err := logFile.Close(); err != nil {
 			panic(err)

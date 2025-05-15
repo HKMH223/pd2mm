@@ -18,6 +18,8 @@ git config --local user.email "USERNAME@SOMETHING.com"
 
 ## Requirements (Building)
 - Go 1.24.3 or later.
+- GCC 15.1.0 or later.
+    - For Windows it is recommended to use [winlibs_mingw](https://github.com/brechtsanders/winlibs_mingw/releases). 
 - GNU Make 4.4.1 or later.
 
 ### Requirements (Development)
@@ -42,7 +44,7 @@ git config --local user.email "USERNAME@SOMETHING.com"
 | ARM64  | ❌ | ❌ | ❌ |
 
 ## ⚠️ Using AI for Development
-I believe AI can prove beneficial for assisting in development, however, this does not mean you should lean on it to do the heavy lifting for you. Code should be legible, consistent, and maintainable. If you are using AI to assist development of `pd2mm` please take the time to carefully read the guidelines below.
+I believe AI can prove beneficial for assisting in development, however, this does not mean you should lean on it to do the heavy lifting for you. Code should be legible, consistent, and maintainable. If you are using AI to assist in the development of `pd2mm` please take the time to carefully read the guidelines below.
 
 ## Contribution Guidelines
 If you would like to contribute to `pd2mm` please take the time to carefully read the guidelines below.

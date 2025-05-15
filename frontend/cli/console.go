@@ -19,39 +19,32 @@
 package main
 
 import (
-	"flag"
+	"io"
+	"os"
 
-	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/common/util"
+	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/lang"
 	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
-var (
-	flags    *pd2mm.Flags = NewFlags()   //nolint:gochecknoglobals // allowed
-	defaults              = pd2mm.Flags{ //nolint:gochecknoglobals // allowed
-		Version: false,
-		Config:  lang.Lang("defaultConfigPath"),
-		Lang:    "en",
-		Bin:     filesystem.Combine(lang.Lang("programName"), "bin"),
-	}
-)
+// StartApp is the main entry point for pd2mm.
+func StartApp(logFile io.Writer) {
+	logger.SharedLogger = logger.NewMultiLogger(logFile, os.Stdout)
 
-func NewFlags() *pd2mm.Flags {
-	return &defaults
-}
+	util.DrawWatermark([]string{lang.Lang("programName"), lang.Lang("watermarkPart1"), lang.Lang("watermarkPart2")}, func(s string) {
+		logger.SharedLogger.Info(s)
+	})
 
-//nolint:gochecknoinits // allowed
-func init() {
-	flag.BoolVar(&flags.Version, "version", defaults.Version, lang.Lang("versionUsage"))
-	flag.StringVar(&flags.Config, "config", defaults.Config, lang.Lang("configUsage"))
-
-	if flags.Lang != "" {
-		err := lang.SetLanguage(flags.Lang)
-		if err != nil {
-			logger.SharedLogger.Info(lang.Lang("languageNotFound"))
-		}
+	if data.Flag.Version {
+		version()
+		return
 	}
 
-	flag.Parse()
+	if util.IsFlagPassed("config") && data.Flag.Config == "" {
+		logger.SharedLogger.Fatal("Flag 'config' cannot be nil or empty")
+	}
+
+	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() {})
 }

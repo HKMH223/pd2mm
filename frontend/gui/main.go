@@ -16,11 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pd2mm
+package main
 
-type Flags struct {
-	Version bool
-	Config  string
-	Lang    string
-	Bin     string
+import (
+	"github.com/hkmh223/pd2mm/internal/data"
+	"github.com/hkmh223/pd2mm/internal/pd2mm"
+)
+
+var gitHash string //nolint:gochecknoglobals // allowed
+
+func main() {
+	logFile := pd2mm.OpenLogFile(*data.Flag)
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	StartApp(gitHash, logFile)
 }

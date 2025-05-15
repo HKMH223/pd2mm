@@ -49,11 +49,11 @@ func TestGenericDownload(t *testing.T) {
 func TestFileDownload(t *testing.T) {
 	t.Parallel()
 
-	if err := download.File(testURL, "LICENSE", "./.test/"); err != nil {
+	if err := download.File(testURL, "LICENSE", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 
-	if bytes, err := download.FileWithBytes(testURL, "LICENSE", "./.test/"); err != nil || len(bytes) == 0 {
+	if bytes, err := download.FileWithBytes(testURL, "LICENSE", t.TempDir()); err != nil || len(bytes) == 0 {
 		t.Fatal("download fail")
 	}
 }
@@ -62,19 +62,19 @@ func TestFileDownload(t *testing.T) {
 func TestFileValidated(t *testing.T) {
 	t.Parallel()
 
-	if err := download.FileValidated(testURL, "aaabbbccc", "LICENSE", "./.test/"); err == nil {
+	if err := download.FileValidated(testURL, "aaabbbccc", "LICENSE", t.TempDir()); err == nil {
 		t.Fatal("download fail")
 	}
 
-	if bytes, err := download.FileWithBytesValidated(testURL, "aaabbbccc", "LICENSE", "./.test/"); err == nil || len(bytes) != 0 {
+	if bytes, err := download.FileWithBytesValidated(testURL, "aaabbbccc", "LICENSE", t.TempDir()); err == nil || len(bytes) != 0 {
 		t.Fatal("download fail")
 	}
 
-	if err := download.FileValidated(testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", "./.test/"); err != nil {
+	if err := download.FileValidated(testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 
-	if bytes, err := download.FileWithBytesValidated(testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", "./.test/"); err != nil || len(bytes) == 0 {
+	if bytes, err := download.FileWithBytesValidated(testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", t.TempDir()); err != nil || len(bytes) == 0 {
 		t.Fatal("download fail")
 	}
 }
@@ -89,15 +89,15 @@ func TestFileDownloadWithHash(t *testing.T) {
 		},
 	}
 
-	if err := download.FileWithContext(context.TODO(), msg, testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", "./.test/", download.DefaultHashValidator); err != nil {
+	if err := download.FileWithContext(context.TODO(), msg, testURL, "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef", "LICENSE", t.TempDir(), download.DefaultHashValidator); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := download.FileWithContext(context.TODO(), msg, testURL, "", "LICENSE", "./.test/", download.DefaultHashValidator); err == nil {
+	if err := download.FileWithContext(context.TODO(), msg, testURL, "", "LICENSE", t.TempDir(), download.DefaultHashValidator); err == nil {
 		t.Fatal("empty hash has validated successfully")
 	}
 
-	if bytes, err := download.FileWithContextAndBytes(context.TODO(), msg, testURL, "", "LICENSE", "./.test/", nil); err != nil || len(bytes) == 0 {
+	if bytes, err := download.FileWithContextAndBytes(context.TODO(), msg, testURL, "", "LICENSE", t.TempDir(), nil); err != nil || len(bytes) == 0 {
 		t.Fatal("download fail")
 	}
 }

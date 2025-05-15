@@ -27,9 +27,16 @@ var En = map[string]string{ //nolint:gochecknoglobals // allowed
 	"extractingNotify":  "... EXTRACTING",
 	"copyingNotify":     "... COPYING",
 	"startingNotify":    "... STARTING",
+	"workingNotify":     "... WORKING",
 	"doneNotify":        "... DONE",
 	"errorNotify":       "ERROR:",
 	"defaultConfigPath": "pd2mm/pd2.json",
+	"defaultLogPath":    "pd2mm_log.txt",
 	"watermarkPart1":    "This work is free of charge",
 	"watermarkPart2":    "If you paid money, you were scammed",
+
+	"configLabel": "The config file path",
+	"logLabel":    "The log file path",
+	"binLabel":    "The 7z file path",
+	"startButton": "Start",
 }

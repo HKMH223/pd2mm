@@ -16,46 +16,51 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pd2mm
+package data
 
 import (
-	"slices"
+	"flag"
+	"strings"
 
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
-	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-func Start(flags Flags, update func()) {
-	flags.Run(configs(flags), update)
+type Flags struct {
+	Version bool
+	Config  string
+	Log     string
+	Lang    string
+	Bin     string
 }
 
-func configs(flags Flags) []Config {
-	var entries []string
+var (
+	Flag    = NewFlags() //nolint:gochecknoglobals // allowed
+	Default = Flags{     //nolint:gochecknoglobals // allowed
+		Version: false,
+		Config:  lang.Lang("defaultConfigPath"),
+		Log:     lang.Lang("defaultLogPath"),
+		Lang:    "en",
+		Bin:     strings.ReplaceAll(filesystem.Combine(lang.Lang("programName"), "bin"), "\\", "/"),
+	}
+)
 
-	if flags.Config != "" {
-		entries = append(entries, flags.Config)
-	} else {
-		files, err := filesystem.GetTopFiles(lang.Lang("programName"))
+func NewFlags() *Flags {
+	return &Default
+}
+
+//nolint:gochecknoinits // allowed
+func init() {
+	flag.BoolVar(&Flag.Version, "version", Default.Version, lang.Lang("versionUsage"))
+	flag.StringVar(&Flag.Config, "config", Default.Config, lang.Lang("configUsage"))
+
+	if Flag.Lang != "" {
+		err := lang.SetLanguage(Flag.Lang)
 		if err != nil {
-			logger.SharedLogger.Fatal("Failed to get files", "err", err)
-		}
-
-		for _, file := range files {
-			if ext := filesystem.GetFileExtension(file); slices.Contains(data.FileTypes, ext) {
-				entries = append(entries, filesystem.FromCwd(lang.Lang("programName"), file))
-			}
+			logger.SharedLogger.Info(lang.Lang("languageNotFound"))
 		}
 	}
 
-	var configs []Config
-
-	for _, entry := range entries {
-		if c, err := data.Read(entry); err == nil {
-			configs = append(configs, Config{Config: &c})
-		}
-	}
-
-	return configs
+	flag.Parse()
 }

@@ -109,6 +109,7 @@ linters:
             - github.com/hkmh223/pd2mm
             - github.com/charmbracelet/log
             - github.com/Xuanwo/go-locale
+            - github.com/AllenDang/giu
     funlen:
       lines: 100
       statements: 50

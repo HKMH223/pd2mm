@@ -29,6 +29,8 @@ import (
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/safe"
 	"github.com/hkmh223/pd2mm/common/util"
+	"github.com/hkmh223/pd2mm/internal/data"
+	"github.com/hkmh223/pd2mm/internal/io"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
@@ -60,7 +62,7 @@ func (c Config) process(search PathSearch) error {
 	}
 
 	if search.Export != "" {
-		if err := copyFile(search.Output, search.Export); err != nil {
+		if err := io.CopyFile(search.Output, search.Export); err != nil {
 			return &MError{Header: "process", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", search.Output, search.Export), Err: err}
 		}
 	}
@@ -129,7 +131,7 @@ func (c Config) checkExpectsData(path string, search PathSearch) (bool, error) {
 }
 
 // Handle expected data as a file.
-func (c Config) expectedIsFile(source []string, search PathSearch, expect Expect) (bool, error) {
+func (c Config) expectedIsFile(source []string, search PathSearch, expect data.Expect) (bool, error) {
 	path := strings.Join(source, "/")
 
 	destination := filepath.Join(search.Output, fixDestination(source, search, expect, false))
@@ -154,7 +156,7 @@ func (c Config) expectedIsFile(source []string, search PathSearch, expect Expect
 }
 
 // Handle expected data as a directory.
-func (c Config) expectedIsDirectory(source []string, search PathSearch, expect Expect) (bool, error) {
+func (c Config) expectedIsDirectory(source []string, search PathSearch, expect data.Expect) (bool, error) {
 	destination := fixDestination(source, search, expect, true)
 	if destination == "" {
 		return false, nil
@@ -184,7 +186,7 @@ func (c Config) copyAdditional(search PathSearch) error {
 		logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
 
 		src, dest := search.formatString(copy.From), search.formatString(copy.To)
-		if err := copyFile(src, dest); err != nil {
+		if err := io.CopyFile(src, dest); err != nil {
 			return &MError{Header: "copies", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
 	}
@@ -193,7 +195,7 @@ func (c Config) copyAdditional(search PathSearch) error {
 }
 
 // fixDestination fixes the destination path based on the provided PathSearch and Expect data.
-func fixDestination(parts []string, search PathSearch, expect Expect, dir bool) string {
+func fixDestination(parts []string, search PathSearch, expect data.Expect, dir bool) string {
 	result := strings.Join(parts, "/")
 
 	if dir {
@@ -241,7 +243,7 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 
 	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
-	if err := copyFile(src, dest); err != nil {
+	if err := io.CopyFile(src, dest); err != nil {
 		return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
 	}
 
@@ -257,7 +259,7 @@ func (c Config) parseExpectedAndCopy(src, dest string) error {
 	src, dest = strings.Join(source, "/"), filepath.Join(dest, safe.Slice(source, len(source)-1))
 	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
-	if err := copyFile(src, dest); err != nil {
+	if err := io.CopyFile(src, dest); err != nil {
 		return &MError{Header: "parseExpectedAndCopy", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
 	}
 

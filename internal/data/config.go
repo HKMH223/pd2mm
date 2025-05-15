@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pd2mm
+package data
 
 import (
 	"encoding/json"
@@ -25,6 +25,8 @@ import (
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/tidwall/jsonc"
 )
+
+var FileTypes = []string{".jsonc", ".json"} //nolint:gochecknoglobals // allowed
 
 type Config struct {
 	Mods []PathSearch `json:"mods"`

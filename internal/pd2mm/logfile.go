@@ -19,43 +19,19 @@
 package pd2mm
 
 import (
-	"slices"
+	"log"
+	"os"
 
 	"github.com/hkmh223/pd2mm/common/filesystem"
-	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/internal/data"
-	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-func Start(flags Flags, update func()) {
-	flags.Run(configs(flags), update)
-}
-
-func configs(flags Flags) []Config {
-	var entries []string
-
-	if flags.Config != "" {
-		entries = append(entries, flags.Config)
-	} else {
-		files, err := filesystem.GetTopFiles(lang.Lang("programName"))
-		if err != nil {
-			logger.SharedLogger.Fatal("Failed to get files", "err", err)
-		}
-
-		for _, file := range files {
-			if ext := filesystem.GetFileExtension(file); slices.Contains(data.FileTypes, ext) {
-				entries = append(entries, filesystem.FromCwd(lang.Lang("programName"), file))
-			}
-		}
+// OpenLogFile opens the log file for writing.
+func OpenLogFile(flags data.Flags) *os.File {
+	file, err := os.OpenFile(filesystem.GetRelativePath(flags.Log), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644) //nolint:mnd // allowed
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	var configs []Config
-
-	for _, entry := range entries {
-		if c, err := data.Read(entry); err == nil {
-			configs = append(configs, Config{Config: &c})
-		}
-	}
-
-	return configs
+	return file
 }
