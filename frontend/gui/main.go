@@ -47,6 +47,7 @@ func main() {
 		}
 	}()
 
+	pd2mm.Setup(pd2mm.Flags{Flags: data.Flag})
 	if len(os.Args) > 1 {
 		pd2mm.StartConsoleApp(logFile, version)
 	} else {

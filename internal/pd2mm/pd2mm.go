@@ -27,6 +27,14 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
+// Setup creates the default config if it does not exist.
+func Setup(flags Flags) {
+	if !filesystem.Exists(filesystem.FromCwd(lang.Lang("defaultConfigPath"))) {
+		logger.SharedLogger.Warnf("%s does not exist, creating.", lang.Lang("defaultConfigPath"))
+		data.Write(lang.Lang("defaultConfigPath"), data.Default())
+	}
+}
+
 // Start starts the program.
 func Start(flags Flags, configs []Config, update func()) {
 	flags.Run(configs, update)

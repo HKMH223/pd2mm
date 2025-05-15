@@ -44,5 +44,6 @@ func main() {
 		}
 	}()
 
+	pd2mm.Setup(pd2mm.Flags{Flags: data.Flag})
 	pd2mm.StartConsoleApp(logFile, version)
 }

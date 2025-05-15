@@ -84,7 +84,7 @@ func Read(path string) (Config, error) {
 
 // Write writes the config file at path.
 func Write(path string, config Config) error {
-	data, err := json.Marshal(config)
+	data, err := json.MarshalIndent(config, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -94,4 +94,75 @@ func Write(path string, config Config) error {
 	}
 
 	return nil
+}
+
+func Default() Config {
+	return Config{
+		Mods: []PathSearch{
+			{
+				Path:    "pd2mm/pd2/mods",
+				Output:  "pd2mm/pd2/output/mods",
+				Extract: "pd2mm/pd2/extract/mods",
+				Export:  "",
+				Include: []Include{},
+				Exclude: [][]string{},
+				Expects: []Expect{
+					{
+						Path:      []string{"mod.txt"},
+						Require:   []string{},
+						Exclusive: false,
+						Base:      0,
+					},
+					{
+						Path:      []string{"main.xml"},
+						Require:   []string{},
+						Exclusive: false,
+						Base:      0,
+					},
+				},
+				Copy:   []PathCopy{},
+				Rename: []PathRename{},
+			},
+			{
+				Path:    "pd2mm/pd2/mod_overrides",
+				Output:  "pd2mm/pd2/output/mod_overrides",
+				Extract: "pd2mm/pd2/extract/mod_overrides",
+				Export:  "",
+				Include: []Include{},
+				Exclude: [][]string{},
+				Expects: []Expect{
+					{Path: []string{"main.xml"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"add.xml"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"effects"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"assets"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"units"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"hooks"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"guis"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"anims"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"soundbanks"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: []string{"fonts"}, Require: []string{}, Exclusive: false, Base: 0},
+				},
+				Copy:   []PathCopy{},
+				Rename: []PathRename{},
+			},
+			{
+				Path:    "pd2mm/pd2/maps",
+				Output:  "pd2mm/pd2/output/maps",
+				Extract: "pd2mm/pd2/extract/maps",
+				Export:  "",
+				Include: []Include{},
+				Exclude: [][]string{},
+				Expects: []Expect{
+					{
+						Path:      []string{"main.xml"},
+						Require:   []string{},
+						Exclusive: false,
+						Base:      0,
+					},
+				},
+				Copy:   []PathCopy{},
+				Rename: []PathRename{},
+			},
+		},
+	}
 }
