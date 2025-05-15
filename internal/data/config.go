@@ -83,8 +83,8 @@ func Read(path string) (Config, error) {
 }
 
 // Write writes the config file at path.
-func Write(path string) error {
-	data, err := json.Marshal(Config{}) //nolint:exhaustruct // allowed
+func Write(path string, config Config) error {
+	data, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}

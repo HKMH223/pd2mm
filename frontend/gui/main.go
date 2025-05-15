@@ -19,11 +19,25 @@
 package main
 
 import (
+	"os"
+	"runtime"
+	"strings"
+
+	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/common/win32"
 	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
-var gitHash string //nolint:gochecknoglobals // allowed
+var (
+	gitHash   string //nolint:gochecknoglobals // allowed
+	buildDate string //nolint:gochecknoglobals // allowed
+	buildOn   string //nolint:gochecknoglobals // allowed
+)
+
+func version() {
+	logger.SharedLogger.Info("version", "go", strings.TrimPrefix(buildOn, "go version "), "revision", gitHash, "date", buildDate)
+}
 
 func main() {
 	logFile := pd2mm.OpenLogFile(*data.Flag)
@@ -33,5 +47,13 @@ func main() {
 		}
 	}()
 
-	StartApp(gitHash, logFile)
+	if len(os.Args) > 1 {
+		pd2mm.StartConsoleApp(logFile, version)
+	} else {
+		if runtime.GOOS == "windows" {
+			win32.HideConsoleWindow()
+		}
+
+		StartApp(gitHash, logFile)
+	}
 }

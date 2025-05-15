@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package main
+package pd2mm
 
 import (
 	"io"
@@ -26,12 +26,13 @@ import (
 	"github.com/hkmh223/pd2mm/common/util"
 	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/lang"
-	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
-// StartApp is the main entry point for pd2mm.
-func StartApp(logFile io.Writer) {
+// StartConsoleApp is the main entry point for pd2mm.
+func StartConsoleApp(logFile io.Writer, version func()) {
 	logger.SharedLogger = logger.NewMultiLogger(logFile, os.Stdout)
+
+	errCh := make(chan error, 3) //nolint:mnd // allowed
 
 	util.DrawWatermark([]string{lang.Lang("programName"), lang.Lang("watermarkPart1"), lang.Lang("watermarkPart2")}, func(s string) {
 		logger.SharedLogger.Info(s)
@@ -46,5 +47,15 @@ func StartApp(logFile io.Writer) {
 		logger.SharedLogger.Fatal("Flag 'config' cannot be nil or empty")
 	}
 
-	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() {})
+	if !util.IsFlagPassed("config") {
+		data.Flag.Config = ""
+	}
+
+	Flags{Flags: data.Flag}.RunWithError(Configs(Flags{Flags: data.Flag}), errCh)
+
+	for err := range errCh {
+		if err != nil {
+			logger.SharedLogger.Errorf("%s %v", lang.Lang("errorNotify"), err)
+		}
+	}
 }

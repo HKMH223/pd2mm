@@ -1,4 +1,4 @@
-//go:build windows
+//go:build !windows
 
 /*
  * pd2mm
@@ -20,26 +20,7 @@
 
 package win32
 
-import (
-	"errors"
-	"fmt"
-	"syscall"
-
-	"golang.org/x/sys/windows"
-)
-
-// FreeConsole frees the console associated with the current process.
-func FreeConsole() error {
-	proc := syscall.MustLoadDLL("kernel32.dll").MustFindProc("FreeConsole")
-
-	r, _, e := proc.Call()
-	if int32(r) == 0 {
-		if e != nil && !errors.Is(e, windows.ERROR_SUCCESS) {
-			return fmt.Errorf("FreeConsole failed: %w", e)
-		}
-
-		return errors.New("FreeConsole returned 0") //nolint:err113 // allowed
-	}
-
-	return nil
+// GetConsoleWindow frees the console associated with the current process.
+func GetConsoleWindow() uintptr {
+	return 0
 }

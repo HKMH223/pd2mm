@@ -19,8 +19,6 @@
 package pd2mm
 
 import (
-	"sync"
-
 	"github.com/hkmh223/pd2mm/common/benchmark"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
@@ -28,7 +26,7 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-var IsRunning bool //nolint:gochecknoglobals // wontfix
+var IsRunning bool //nolint:gochecknoglobals // allowed
 
 // Run runs the program.
 func (f Flags) Run(configs []Config, update func()) {
@@ -36,16 +34,10 @@ func (f Flags) Run(configs []Config, update func()) {
 
 	IsRunning = true
 
-	var wait sync.WaitGroup
-
-	wait.Add(1)
-
 	go func() {
-		defer wait.Done()
-
 		logger.SharedLogger.Info(lang.Lang("startingNotify"))
 
-		f.RunWithError(configs, errCh)
+		go f.RunWithError(configs, errCh)
 
 		for err := range errCh {
 			if err != nil {
@@ -61,8 +53,6 @@ func (f Flags) Run(configs []Config, update func()) {
 
 		update()
 	}()
-
-	wait.Wait()
 }
 
 // RunWithError runs the program with error handling.
@@ -74,7 +64,7 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 			f.runner(config)
 			return nil
 		}, "Start", func(methodName, elapsedTime string) {
-			logger.SharedLogger.Warnf("%s took %s", methodName, elapsedTime)
+			logger.SharedLogger.Infof("%s took %s", methodName, elapsedTime)
 		})
 		if err != nil {
 			logger.SharedLogger.Fatal("Failed to benchmark", "err", err)
@@ -85,6 +75,8 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 // runner starts the extraction and processing of mods.
 func (f Flags) runner(config Config) {
 	for _, search := range config.Mods {
+		logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Output)
+
 		if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Output)); err != nil {
 			logger.SharedLogger.Warn("Failed to delete directory", "path", search.Output, "err", err)
 		}

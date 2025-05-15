@@ -21,25 +21,25 @@
 package win32
 
 import (
-	"errors"
-	"fmt"
-	"syscall"
-
 	"golang.org/x/sys/windows"
 )
 
-// FreeConsole frees the console associated with the current process.
-func FreeConsole() error {
-	proc := syscall.MustLoadDLL("kernel32.dll").MustFindProc("FreeConsole")
+// HideConsoleWindow frees the console associated with the current process.
+func HideConsoleWindow() {
+	user32 := windows.NewLazySystemDLL("user32.dll")
 
-	r, _, e := proc.Call()
-	if int32(r) == 0 {
-		if e != nil && !errors.Is(e, windows.ERROR_SUCCESS) {
-			return fmt.Errorf("FreeConsole failed: %w", e)
-		}
-
-		return errors.New("FreeConsole returned 0") //nolint:err113 // allowed
+	if user32.NewProc("GetWindowThreadProcessId").Find() != nil {
+		return
 	}
 
-	return nil
+	pid := windows.GetCurrentProcessId()
+
+	var cpid uint32
+	if _, err := windows.GetWindowThreadProcessId(windows.HWND(GetConsoleWindow()), &cpid); err != nil {
+		return
+	}
+
+	if pid == cpid {
+		_ = FreeConsole()
+	}
 }

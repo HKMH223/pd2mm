@@ -27,11 +27,11 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-func Start(flags Flags, update func()) {
-	flags.Run(configs(flags), update)
+func Start(flags Flags, configs []Config, update func()) {
+	flags.Run(configs, update)
 }
 
-func configs(flags Flags) []Config {
+func ConfigNames(flags Flags) []string {
 	var entries []string
 
 	if flags.Config != "" {
@@ -49,7 +49,13 @@ func configs(flags Flags) []Config {
 		}
 	}
 
+	return entries
+}
+
+func Configs(flags Flags) []Config {
 	var configs []Config
+
+	entries := ConfigNames(flags)
 
 	for _, entry := range entries {
 		if c, err := data.Read(entry); err == nil {

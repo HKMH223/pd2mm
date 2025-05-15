@@ -30,6 +30,8 @@ import (
 
 // Extract extracts the contents of an archive to a specified directory.
 func Extract(flags data.Flags, search data.PathSearch) error {
+	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Extract)
+
 	if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Extract)); err != nil {
 		logger.SharedLogger.Warn("Failed to delete directory", "path", search.Extract, "err", err)
 	}

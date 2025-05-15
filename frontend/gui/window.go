@@ -24,15 +24,18 @@ import (
 
 	giu "github.com/AllenDang/giu"
 	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/common/safe"
 	"github.com/hkmh223/pd2mm/internal/data"
 	"github.com/hkmh223/pd2mm/internal/lang"
 	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
 var (
-	sashPos1 float32      = 500 //nolint:gochecknoglobals // allowed
-	sashPos2 float32      = 300 //nolint:gochecknoglobals // allowed
-	buf      bytes.Buffer       //nolint:gochecknoglobals // allowed
+	sashPos1       float32      = 500 //nolint:gochecknoglobals // allowed
+	sashPos2       float32      = 300 //nolint:gochecknoglobals // allowed
+	buf            bytes.Buffer       //nolint:gochecknoglobals // allowed
+	configs        []string           //nolint:gochecknoglobals // allowed
+	selectedConfig int32              //nolint:gochecknoglobals // allowed
 )
 
 // StartApp is the main entry point for pd2mm.
@@ -40,14 +43,30 @@ func StartApp(version string, logFile io.Writer) {
 	logger.SharedLogger = logger.NewMultiLogger(logFile, &buf)
 	logger.SharedLogger.Info("Initialized!")
 
+	// ConfigNames either takes a the flag config, otherwise get all configs in the directory.
+	// We want to get all configs.
+	data.Flag.Config = ""
+	configs = pd2mm.ConfigNames(pd2mm.Flags{Flags: data.Flag})
+	// pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() { giu.Update() })
 	wnd := giu.NewMasterWindow("pd2mm - "+version, 840, 500, 0) //nolint:mnd // allowed
 	wnd.Run(window)
 }
 
 func start() {
-	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() { giu.Update() })
+	config, err := data.Read(safe.Slice(configs, int(selectedConfig)))
+	if err != nil {
+		logger.SharedLogger.Fatal("Failed to read configuration file", "err", err)
+	}
+
+	configs := []pd2mm.Config{{Config: &config}}
+	if data.Flag.Config != "" {
+		configs = pd2mm.Configs(pd2mm.Flags{Flags: data.Flag})
+	}
+
+	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() { giu.Update() })
 }
 
+//nolint:lll // allowed
 func window() {
 	giu.SingleWindow().Layout(
 		giu.Condition(pd2mm.IsRunning, giu.Label("Working..."), nil),
@@ -55,12 +74,12 @@ func window() {
 			giu.Layout{
 				giu.SplitLayout(giu.DirectionVertical, &sashPos1,
 					giu.Layout{
-						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Config).Label(lang.Lang("configLabel"))),
 						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Bin).Label(lang.Lang("binLabel"))),
 						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Log).Label(lang.Lang("logLabel"))),
+						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.Combo(lang.Lang("configLabel"), safe.Slice(configs, int(selectedConfig)), configs, &selectedConfig)),
+						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Config).Hint(lang.Lang("defaultConfigPath")).Label(lang.Lang("configCustomLabel"))),
 					},
 					giu.Layout{
-						// giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.Checkbox("Create zip after download", &flags.Zip)),
 						giu.Separator(),
 						giu.Row(
 							giu.Button(lang.Lang("startButton")).OnClick(start).Disabled(pd2mm.IsRunning),

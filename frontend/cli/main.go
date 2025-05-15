@@ -44,5 +44,5 @@ func main() {
 		}
 	}()
 
-	StartApp(logFile)
+	pd2mm.StartConsoleApp(logFile, version)
 }
