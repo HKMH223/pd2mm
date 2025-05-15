@@ -21,6 +21,4 @@
 package win32
 
 // HideConsoleWindow frees the console associated with the current process.
-func HideConsoleWindow() {
-	return
-}
+func HideConsoleWindow() {}
