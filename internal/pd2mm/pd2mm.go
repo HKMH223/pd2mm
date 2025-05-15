@@ -28,10 +28,14 @@ import (
 )
 
 // Setup creates the default config if it does not exist.
-func Setup(flags Flags) {
+func Setup() {
 	if !filesystem.Exists(filesystem.FromCwd(lang.Lang("defaultConfigPath"))) {
 		logger.SharedLogger.Warnf("%s does not exist, creating.", lang.Lang("defaultConfigPath"))
-		data.Write(lang.Lang("defaultConfigPath"), data.Default())
+
+		if err := data.Write(lang.Lang("defaultConfigPath"), data.Default()); err != nil {
+			logger.SharedLogger.Error("failed to write default config", "err", err)
+			return
+		}
 	}
 }
 
