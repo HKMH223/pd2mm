@@ -32,7 +32,7 @@ type MultiLogger struct {
 	loggers []*log.Logger
 }
 
-var SharedLogger = NewMultiLogger(os.Stdout) //nolint:gochecknoglobals // allowed
+var SharedLogger = NewMultiLogger(os.Stdout) //nolint:gochecknoglobals // reason: needed for workspace logging.
 
 // Create a new MultiLogger.
 func NewMultiLogger(wrs ...io.Writer) *MultiLogger {
@@ -43,7 +43,7 @@ func NewMultiLogger(wrs ...io.Writer) *MultiLogger {
 
 	for i, w := range wrs {
 		loggers.writers[i] = w
-		loggers.loggers[i] = log.NewWithOptions(w, log.Options{ //nolint:exhaustruct // allowed
+		loggers.loggers[i] = log.NewWithOptions(w, log.Options{ //nolint:exhaustruct // reason: not every option is needed.
 			ReportCaller:    false,
 			ReportTimestamp: true,
 			TimeFormat:      time.Kitchen,

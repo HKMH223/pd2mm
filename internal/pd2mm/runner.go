@@ -26,11 +26,11 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-var IsRunning bool //nolint:gochecknoglobals // allowed
+var IsRunning bool //nolint:gochecknoglobals // reason: used by window.
 
 // Run runs the program.
 func (f Flags) Run(configs []Config, update func()) {
-	errCh := make(chan error, 3) //nolint:mnd // allowed
+	errCh := make(chan error, 3) //nolint:mnd // reason: max errors in channel.
 
 	IsRunning = true
 
@@ -67,7 +67,8 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 			logger.SharedLogger.Infof("%s took %s", methodName, elapsedTime)
 		})
 		if err != nil {
-			logger.SharedLogger.Fatal("Failed to benchmark", "err", err)
+			logger.SharedLogger.Error("failed to benchmark", "err", err)
+			return
 		}
 	}
 }
@@ -78,18 +79,18 @@ func (f Flags) runner(config Config) {
 		logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Output)
 
 		if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Output)); err != nil {
-			logger.SharedLogger.Warn("Failed to delete directory", "path", search.Output, "err", err)
+			logger.SharedLogger.Warn("failed to delete directory", "path", search.Output, "err", err)
 		}
 	}
 
 	for _, search := range config.Mods {
 		if err := io.Extract(*f.Flags, search); err != nil {
-			logger.SharedLogger.Error("Failed to extract mods", "err", err)
+			logger.SharedLogger.Error("failed to extract mods", "err", err)
 			continue
 		}
 
 		if err := config.Process(PathSearch{PathSearch: &search}); err != nil {
-			logger.SharedLogger.Error("Failed to process mods", "err", err)
+			logger.SharedLogger.Error("failed to process mods", "err", err)
 			continue
 		}
 	}

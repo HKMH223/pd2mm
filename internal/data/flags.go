@@ -36,8 +36,8 @@ type Flags struct {
 }
 
 var (
-	Flag    = NewFlags() //nolint:gochecknoglobals // allowed
-	Default = Flags{     //nolint:gochecknoglobals // allowed
+	Flag     = NewFlags() //nolint:gochecknoglobals // reason: flags are needed across packages.
+	defaults = Flags{     //nolint:gochecknoglobals // reason: default flags are assigned in multiple functions.
 		Version: false,
 		Config:  lang.Lang("defaultConfigPath"),
 		Log:     lang.Lang("defaultLogPath"),
@@ -46,14 +46,15 @@ var (
 	}
 )
 
+// NewFlags creates a new Flags instance.
 func NewFlags() *Flags {
-	return &Default
+	return &defaults
 }
 
-//nolint:gochecknoinits // allowed
+//nolint:gochecknoinits // reason: setup program flags.
 func init() {
-	flag.BoolVar(&Flag.Version, "version", Default.Version, lang.Lang("versionUsage"))
-	flag.StringVar(&Flag.Config, "config", Default.Config, lang.Lang("configUsage"))
+	flag.BoolVar(&Flag.Version, "version", defaults.Version, lang.Lang("versionUsage"))
+	flag.StringVar(&Flag.Config, "config", defaults.Config, lang.Lang("configUsage"))
 
 	if Flag.Lang != "" {
 		err := lang.SetLanguage(Flag.Lang)

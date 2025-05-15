@@ -24,13 +24,13 @@ import (
 	"github.com/hkmh223/pd2mm/common/zip"
 )
 
-func TestZip(t *testing.T) { //nolint:paralleltest // dependant
+func TestZip(t *testing.T) { //nolint:paralleltest // reason: unzip is dependant on zip.
 	if err := zip.Zip("./", "./.test/simplezip-src.zip"); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestUnzip(t *testing.T) { //nolint:paralleltest // dependant
+func TestUnzip(t *testing.T) { //nolint:paralleltest // reason: unzip is dependant on zip.
 	if err := zip.Unzip("./.test/simplezip-src.zip", "./.test/src"); err != nil {
 		t.Fatal(err)
 	}

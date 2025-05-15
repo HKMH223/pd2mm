@@ -44,8 +44,9 @@ func Unzip(src, dest string) error {
 
 func UnzipByPrefixWithMessenger(src, dest, prefix string, msg Messenger) error {
 	step := 1024
+
 	read, err := zip.OpenReader(src)
-	if err != nil { //nolint:wsl // gofumpt conflict
+	if err != nil {
 		return err
 	}
 

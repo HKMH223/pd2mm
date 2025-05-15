@@ -70,9 +70,9 @@ func NewWriter(name string, appendMode bool) (*Writer, error) {
 	var err error
 
 	if appendMode {
-		file, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644) //nolint:mnd // allowed
+		file, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	} else {
-		file, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644) //nolint:mnd // allowed
+		file, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	}
 
 	if err != nil {

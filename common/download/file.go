@@ -102,7 +102,7 @@ func FileWithBytesValidated(url, hash, name, path string) ([]byte, error) {
 
 // FileWithContextAndBytes is a convenience function that validates the download parameters and then downloads the file.
 //
-//nolint:lll // allowed
+//nolint:lll // reason: parameter length.
 func FileWithContextAndBytes(ctx context.Context, state Messenger, url, hash, name, path string, validator func(string, string, string) error) ([]byte, error) {
 	if err := FileWithContext(ctx, state, url, hash, name, path, validator); err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func FileWithContextAndBytes(ctx context.Context, state Messenger, url, hash, na
 
 // FileWithContextAndBytesValidated is a convenience function that validates the download parameters and then downloads the file.
 //
-//nolint:lll // allowed
+//nolint:lll // reason: parameter length.
 func FileWithContext(ctx context.Context, state Messenger, url, hash, name, path string, validator func(string, string, string) error) error {
 	if err := validateDownloadParams(url, path, name); err != nil {
 		return err
@@ -187,7 +187,7 @@ func read(path, name string) ([]byte, error) {
 // write writes the response to a file, and returns an error if it fails.
 func write(resp *http.Response, flags *os.File, hash, name string, skip bool) error {
 	sha := sha256.New()
-	buf := make([]byte, 1<<20) //nolint:mnd // 1 megabyte buffer
+	buf := make([]byte, 1<<20) //nolint:mnd // reason: one megabyte buffer.
 
 	for {
 		index, err := resp.Body.Read(buf)
@@ -214,7 +214,7 @@ func write(resp *http.Response, flags *os.File, hash, name string, skip bool) er
 
 	sum := hex.EncodeToString(sha.Sum(nil))
 	if strings.ToLower(hash) != sum {
-		return fmt.Errorf("hash mismatch for %s", name) //nolint:err113 // required name prevents static error
+		return fmt.Errorf("hash mismatch for %s", name) //nolint:err113 // reason: must show name of file.
 	}
 
 	return nil

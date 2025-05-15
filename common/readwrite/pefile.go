@@ -36,7 +36,7 @@ var (
 // COFFHeader
 // 0x50, 0x45 = PE
 // COFF_START_BYTES_LEN == len(COFFStartBytes).
-var COFFStartBytes = []byte{0x50, 0x45, 0x00, 0x00} //nolint:gochecknoglobals // allowed
+var COFFStartBytes = []byte{0x50, 0x45, 0x00, 0x00} //nolint:gochecknoglobals // reason: COFFStartBytes is constant.
 
 const (
 	COFFStartBytesLen = 4
@@ -48,7 +48,7 @@ const (
 // uint byte size of OptionalHeader64 without magic mumber(2 bytes) or data directory(128 bytes)
 // OptionalHeader64 size is 240
 // (110).
-var OH64ByteSize = binary.Size(OptionalHeader64X110{}) //nolint:exhaustruct,gochecknoglobals // allowed
+var OH64ByteSize = binary.Size(OptionalHeader64X110{}) //nolint:exhaustruct,gochecknoglobals // reason: OH64ByteSize is constant.
 
 // DataDirectory
 // 16 entries * 8 bytes / entry.
@@ -61,7 +61,7 @@ const (
 // https://github.com/golang/go/blob/master/src/debug/pe/section.go
 // uint byte size of SectionHeader32 without name(8 bytes) or characteristics(4 bytes)
 // (28).
-var SH32ByteSize = binary.Size(SectionHeader32X28{}) //nolint:exhaustruct,gochecknoglobals // allowed
+var SH32ByteSize = binary.Size(SectionHeader32X28{}) //nolint:exhaustruct,gochecknoglobals // reason: SH32ByteSize is constant.
 
 const (
 	SH32EntrySize           = 64
@@ -170,8 +170,9 @@ var errRVALessThanOne = errors.New("rva is equal to '-1'")
 // Open a file at the specified path and return Data.
 func Open(path string) (*Data, error) {
 	data := new(Data)
+
 	file, err := os.Open(path)
-	if err != nil { //nolint:wsl // gofumpt conflict
+	if err != nil {
 		return nil, err
 	}
 
@@ -271,7 +272,9 @@ func ReadSHBytes(data []byte, size int) ([]byte, error) {
 		return nil, err
 	}
 
-	return data[offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize+DataDirSize : offset+COFFStartBytesLen+COFFHeaderSize+OH64ByteSize+DataDirSize+size], nil //nolint:lll // allowed
+	index := offset + COFFStartBytesLen + COFFHeaderSize + OH64ByteSize + DataDirSize
+
+	return data[index : index+size], nil
 }
 
 // ReadSHEntryOffset reads the offset of the specified section header entry.

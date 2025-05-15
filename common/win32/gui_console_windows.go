@@ -27,7 +27,7 @@ import (
 
 // WindowConsoleHandle optionally allocated a console to a window process.
 func WindowConsoleHandle(args []string, minArgs int, console, window func(in, out, err io.Writer), isConsole bool) error {
-	if len(args) > minArgs { //nolint:nestif // allowed
+	if len(args) > minArgs { //nolint:nestif // reason: not complex
 		if err := AttachConsoleW(); err != nil {
 			return err
 		}

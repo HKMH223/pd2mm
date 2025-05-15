@@ -21,7 +21,6 @@
 package win32
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"syscall"
@@ -37,7 +36,7 @@ func AttachConsole() error {
 
 	r1, _, err := proc.Call(AttachParentProcess)
 	if r1 == 0 {
-		errno, ok := err.(syscall.Errno) //nolint:errorlint // allowed
+		errno, ok := err.(syscall.Errno) //nolint:errorlint // reason: only used once.
 
 		if ok && errno == 6 {
 			return nil
@@ -49,14 +48,12 @@ func AttachConsole() error {
 	return nil
 }
 
-var wstdin, wstdout, wstderr *os.File //nolint:gochecknoglobals // allowed
-
 // AttachConsole attaches the current process to an existing console.
-func AttachConsoleW() error { //nolint:gocyclo,cyclop // allowed
-	wstdin, wstdout, wstderr = os.Stdin, os.Stdout, os.Stderr
+func AttachConsoleW() error { //nolint:gocyclo,cyclop // reason: not complex.
+	wstdin, wstdout, wstderr := os.Stdin, os.Stdout, os.Stderr
 
 	if wstdin == nil || wstdout == nil || wstderr == nil {
-		return errors.New("nil") //nolint:err113 // allowed
+		return fmt.Errorf("attachconsole: %v %v %v", wstdin, wstdout, wstderr) //nolint:lll,err113 // reason: variables are required for error message.
 	}
 
 	stdin, _ := syscall.GetStdHandle(syscall.STD_INPUT_HANDLE)

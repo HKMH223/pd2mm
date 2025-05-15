@@ -19,8 +19,8 @@
 package crypto
 
 import (
-	"crypto/md5"  //nolint:gosec // allowed
-	"crypto/sha1" //nolint:gosec // allowed
+	"crypto/md5"  //nolint:gosec // reason: crypto library extensions.
+	"crypto/sha1" //nolint:gosec // reason: crypto library extensions.
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/binary"
@@ -51,7 +51,7 @@ func Validate(path, hash string, hashType hash.Hash) error {
 
 // NewMD5 returns the MD5 hash of a file.
 func NewMD5(path string) (string, error) {
-	s, err := NewHash(path, md5.New()) //nolint:gosec // allowed
+	s, err := NewHash(path, md5.New()) //nolint:gosec // reason: crypto library extensions.
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +61,7 @@ func NewMD5(path string) (string, error) {
 
 // NewSHA1 returns the SHA-1 hash of a file.
 func NewSHA1(path string) (string, error) {
-	s, err := NewHash(path, sha1.New()) //nolint:gosec // allowed
+	s, err := NewHash(path, sha1.New()) //nolint:gosec // reason: crypto library extensions.
 	if err != nil {
 		return "", err
 	}

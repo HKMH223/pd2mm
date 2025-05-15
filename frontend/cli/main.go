@@ -27,9 +27,9 @@ import (
 )
 
 var (
-	gitHash   string //nolint:gochecknoglobals // allowed
-	buildDate string //nolint:gochecknoglobals // allowed
-	buildOn   string //nolint:gochecknoglobals // allowed
+	gitHash   string //nolint:gochecknoglobals // reason: build string.
+	buildDate string //nolint:gochecknoglobals // reason: build string.
+	buildOn   string //nolint:gochecknoglobals // reason: build string.
 )
 
 func version() {

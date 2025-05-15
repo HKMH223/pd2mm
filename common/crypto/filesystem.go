@@ -19,7 +19,7 @@
 package crypto
 
 import (
-	"crypto/md5" //nolint:gosec // allowed
+	"crypto/md5" //nolint:gosec // reason: fast hashing.
 	"os"
 	"path/filepath"
 )
@@ -55,7 +55,7 @@ func HashDirectory(dir string) (map[string]string, error) {
 		if !info.IsDir() {
 			rel, _ := filepath.Rel(dir, path)
 
-			hash, err := NewHash(path, md5.New()) //nolint:gosec // allowed
+			hash, err := NewHash(path, md5.New()) //nolint:gosec // reason: fast hashing.
 			if err != nil {
 				return err
 			}
@@ -76,7 +76,7 @@ func DiffDirectory(hashesA, hashesB map[string]string, dirA, dirB string) []Diff
 	for pathA, hashA := range hashesA {
 		if hashB, exists := hashesB[pathA]; !exists {
 			diff = append(diff, DiffData{
-				DiffHashData{}, //nolint:exhaustruct // allowed
+				DiffHashData{}, //nolint:exhaustruct // reason: unused for diff.
 				DiffLocalData{
 					Path:    pathA,
 					ExistsA: dirA,
@@ -91,7 +91,7 @@ func DiffDirectory(hashesA, hashesB map[string]string, dirA, dirB string) []Diff
 					PathB: dirB,
 					HashA: hashA,
 					HashB: hashB,
-				}, DiffLocalData{}, //nolint:exhaustruct // allowed
+				}, DiffLocalData{}, //nolint:exhaustruct // reason: unused for diff.
 			})
 		}
 	}
@@ -99,7 +99,7 @@ func DiffDirectory(hashesA, hashesB map[string]string, dirA, dirB string) []Diff
 	for pathB := range hashesB {
 		if _, exists := hashesA[pathB]; !exists {
 			diff = append(diff, DiffData{
-				DiffHashData{}, //nolint:exhaustruct // allowed
+				DiffHashData{}, //nolint:exhaustruct // reason: unused for diff.
 				DiffLocalData{
 					Path:    pathB,
 					ExistsA: dirB,

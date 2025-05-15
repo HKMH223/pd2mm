@@ -16,9 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//nolint:gochecknoglobals // reason: language strings.
 package lang
 
-var En = map[string]string{ //nolint:gochecknoglobals // allowed
+var En = map[string]string{
 	// General
 	"programName":       "pd2mm",
 	"versionUsage":      "The program version",

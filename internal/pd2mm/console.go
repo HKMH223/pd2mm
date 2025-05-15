@@ -32,7 +32,7 @@ import (
 func StartConsoleApp(logFile io.Writer, version func()) {
 	logger.SharedLogger = logger.NewMultiLogger(logFile, os.Stdout)
 
-	errCh := make(chan error, 3) //nolint:mnd // allowed
+	errCh := make(chan error, 3) //nolint:mnd // reason: max errors in channel.
 
 	util.DrawWatermark([]string{lang.Lang("programName"), lang.Lang("watermarkPart1"), lang.Lang("watermarkPart2")}, func(s string) {
 		logger.SharedLogger.Info(s)
@@ -44,7 +44,8 @@ func StartConsoleApp(logFile io.Writer, version func()) {
 	}
 
 	if util.IsFlagPassed("config") && data.Flag.Config == "" {
-		logger.SharedLogger.Fatal("Flag 'config' cannot be nil or empty")
+		logger.SharedLogger.Error("flag 'config' cannot be nil or empty")
+		return
 	}
 
 	if !util.IsFlagPassed("config") {

@@ -36,11 +36,11 @@ const (
 	Base64_16Len = 24
 )
 
-var DlfKey = []byte{ //nolint:gochecknoglobals // allowed
+var DlfKey = []byte{ //nolint:gochecknoglobals // reason: DLF key is constant.
 	65, 50, 114, 45, 208, 130, 239, 176, 220, 100, 87, 197, 118, 104, 202, 9,
 }
 
-var IV = make([]byte, 16) //nolint:gochecknoglobals,mnd // allowed
+var IV = make([]byte, 16) //nolint:gochecknoglobals,mnd // reason: IV is constant.
 
 var (
 	errDlfFileNotFound   = errors.New("error: DLF file not found")
@@ -75,7 +75,7 @@ func AESEncrypt(key, text []byte) ([]byte, error) {
 	}
 
 	data := make([]byte, aes.BlockSize+len(text))
-	iv := data[:aes.BlockSize] //nolint:varnamelen // allowed
+	iv := data[:aes.BlockSize] //nolint:varnamelen // reason: variable name used by cipher.NewCBCEncrypter().
 
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func AESEncrypt(key, text []byte) ([]byte, error) {
 }
 
 // AESDecrypt decrypts the text using the key and returns the decrypted data.
-func AESDecrypt(key, iv, buf []byte) ([]byte, error) { //nolint:varnamelen // allowed
+func AESDecrypt(key, iv, buf []byte) ([]byte, error) { //nolint:varnamelen // reason: variable name used by cipher.NewCBCEncrypter().
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func AESDecrypt(key, iv, buf []byte) ([]byte, error) { //nolint:varnamelen // al
 }
 
 // AESDecryptBase64 decrypts the text using the key and returns the decrypted data.
-func AESDecryptBase64(kb64 string, iv, buf []byte) error { //nolint:varnamelen // allowed
+func AESDecryptBase64(kb64 string, iv, buf []byte) error { //nolint:varnamelen // reason: variable name used by cipher.NewCBCEncrypter().
 	key, err := base64.StdEncoding.DecodeString(kb64)
 	if err != nil {
 		return errInvalidBase64Key
@@ -178,7 +178,7 @@ func DecodeCipherTag(dlf []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if len(decode) > 16 { //nolint:mnd // allowed
+	if len(decode) > 16 { //nolint:mnd // reason: size of the cipher tag.
 		decode = decode[:16]
 	}
 
@@ -187,7 +187,7 @@ func DecodeCipherTag(dlf []byte) ([]byte, error) {
 
 // GetOoaHash returns the OOA hash from the given data.
 func GetOoaHash(data []byte) []byte {
-	if len(data) < 0x3E { //nolint:mnd // allowed
+	if len(data) < 0x3E { //nolint:mnd // reason: size of the OOA hash.
 		return nil
 	}
 

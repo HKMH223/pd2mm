@@ -58,7 +58,7 @@ func TestFileDownload(t *testing.T) {
 	}
 }
 
-//nolint:lll // test only
+//nolint:lll // reason: test only.
 func TestFileValidated(t *testing.T) {
 	t.Parallel()
 
@@ -79,7 +79,7 @@ func TestFileValidated(t *testing.T) {
 	}
 }
 
-//nolint:lll // test only
+//nolint:lll // reason: test only.
 func TestFileDownloadWithHash(t *testing.T) {
 	t.Parallel()
 

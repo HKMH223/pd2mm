@@ -28,7 +28,7 @@ import (
 
 // OpenLogFile opens the log file for writing.
 func OpenLogFile(flags data.Flags) *os.File {
-	file, err := os.OpenFile(filesystem.GetRelativePath(flags.Log), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644) //nolint:mnd // allowed
+	file, err := os.OpenFile(filesystem.GetRelativePath(flags.Log), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}

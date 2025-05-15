@@ -53,7 +53,7 @@ func (c Config) Process(ps PathSearch) error {
 func (c Config) process(search PathSearch) error {
 	directories, err := filesystem.GetTopDirectories(filesystem.FromCwd(search.Extract))
 	if err != nil {
-		logger.SharedLogger.Debug("Failed to get directories", "path", search.Extract, "err", err)
+		logger.SharedLogger.Debug("failed to get directories", "path", search.Extract, "err", err)
 		return err
 	}
 
@@ -63,7 +63,7 @@ func (c Config) process(search PathSearch) error {
 
 	if search.Export != "" {
 		if err := io.CopyFile(search.Output, search.Export); err != nil {
-			return &MError{Header: "process", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", search.Output, search.Export), Err: err}
+			return &MError{Header: "process", Message: fmt.Sprintf("failed to copy '%s' to '%s'", search.Output, search.Export), Err: err}
 		}
 	}
 
@@ -83,7 +83,7 @@ func (c Config) checkIncludeData(path string, search PathSearch) {
 			}
 
 			if err := c.copyExpected(source, search.formatString(include.To), false, search); err != nil {
-				logger.SharedLogger.Error("Failed to copy", "source", source, "destination", search.formatString(include.To), "err", err)
+				logger.SharedLogger.Error("failed to copy", "source", source, "destination", search.formatString(include.To), "err", err)
 			}
 		}
 
@@ -105,7 +105,8 @@ func (c Config) checkExcludeData(path string, search PathSearch) bool {
 
 	skip, err := c.checkExpectsData(path, search)
 	if err != nil {
-		logger.SharedLogger.Fatal("Failed to copy expected paths", "err", err)
+		logger.SharedLogger.Error("failed to copy expected paths", "err", err)
+		return true
 	}
 
 	return skip
@@ -172,7 +173,7 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect d
 	}
 
 	if err := c.copyExpected(src, destination, false, search); err != nil {
-		return false, &MError{Header: "expects", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, destination), Err: err}
+		return false, &MError{Header: "expectedIsDirectory", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, destination), Err: err}
 	}
 
 	return true, nil
@@ -180,14 +181,14 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect d
 
 // Handle non-contextual file copyAdditional.
 //
-//nolint:lll // allowed
+//nolint:lll // reason: logging.
 func (c Config) copyAdditional(search PathSearch) error {
 	for _, copy := range search.Copy {
 		logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
 
 		src, dest := search.formatString(copy.From), search.formatString(copy.To)
 		if err := io.CopyFile(src, dest); err != nil {
-			return &MError{Header: "copies", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+			return &MError{Header: "copyAdditional", Message: fmt.Sprintf("failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
 	}
 
@@ -208,11 +209,11 @@ func fixDestination(parts []string, search PathSearch, expect data.Expect, dir b
 	}
 
 	results := strings.Split(result, "/")
-	destination := append(expect.Require, safe.Slice(results, len(results)-1)) //nolint:gocritic // allowed
-	base := strings.Join(destination, "/")
+	expect.Require = append(expect.Require, safe.Slice(results, len(results)-1))
+	base := strings.Join(expect.Require, "/")
 
 	if dir {
-		base = strings.Join(safe.Range(destination, 0, len(destination)-expect.Base), "/")
+		base = strings.Join(safe.Range(expect.Require, 0, len(expect.Require)-expect.Base), "/")
 		return filepath.Join(search.Output, base)
 	}
 
@@ -237,14 +238,14 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 
 	if expected {
 		if err := c.parseExpectedAndCopy(src, dest); err != nil {
-			return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+			return &MError{Header: "copyExpected", Message: fmt.Sprintf("failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
 	}
 
 	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
 	if err := io.CopyFile(src, dest); err != nil {
-		return &MError{Header: "copyExpected", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+		return &MError{Header: "copyExpected", Message: fmt.Sprintf("failed to copy '%s' to '%s'", src, dest), Err: err}
 	}
 
 	return nil
@@ -260,7 +261,7 @@ func (c Config) parseExpectedAndCopy(src, dest string) error {
 	logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", src, "destination", dest)
 
 	if err := io.CopyFile(src, dest); err != nil {
-		return &MError{Header: "parseExpectedAndCopy", Message: fmt.Sprintf("Failed to copy '%s' to '%s'", src, dest), Err: err}
+		return &MError{Header: "parseExpectedAndCopy", Message: fmt.Sprintf("failed to copy '%s' to '%s'", src, dest), Err: err}
 	}
 
 	return nil

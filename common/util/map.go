@@ -25,9 +25,9 @@ func MapKeyValuePairs(lines []string) (map[string]string, error) {
 	kvps := map[string]string{}
 
 	for _, line := range lines {
-		kvp := strings.SplitN(line, "=", 2) //nolint:mnd // allowed
+		kvp := strings.SplitN(line, "=", 2) //nolint:mnd // reason: two is the key + value pair.
 
-		if len(kvp) != 2 { //nolint:mnd // allowed
+		if len(kvp) != 2 { //nolint:mnd // reason: two is the key + value pair.
 			continue
 		}
 

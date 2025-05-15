@@ -16,7 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//nolint:gochecknoglobals // reason: language strings.
 package lang
 
 // No translations currently...
-var Zh = En //nolint:gochecknoglobals // allowed
+var Zh = En

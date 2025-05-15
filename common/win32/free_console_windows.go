@@ -28,6 +28,8 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+var errFreeConsole = errors.New("FreeConsole returned 0")
+
 // FreeConsole frees the console associated with the current process.
 func FreeConsole() error {
 	proc := syscall.MustLoadDLL("kernel32.dll").MustFindProc("FreeConsole")
@@ -38,7 +40,7 @@ func FreeConsole() error {
 			return fmt.Errorf("FreeConsole failed: %w", e)
 		}
 
-		return errors.New("FreeConsole returned 0") //nolint:err113 // allowed
+		return errFreeConsole
 	}
 
 	return nil

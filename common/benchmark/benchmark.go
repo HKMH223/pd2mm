@@ -22,7 +22,7 @@ import "time"
 
 // TimerWithResult with result.
 //
-//nolint:ireturn // allowed
+//nolint:ireturn // reason: T should not have constraints.
 func TimerWithResult[T any](fn func() (T, error), methodName string, caller func(string, string)) (T, error) {
 	start := time.Now()
 	result, err := fn()

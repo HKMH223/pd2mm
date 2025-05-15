@@ -67,7 +67,7 @@ func Compress(src, dest string, redirect bool, opts ...CompressionOptions) (Erro
 		return ProcessNotFound, ErrSevenZipNotFound
 	}
 
-	//nolint:lll // allowed
+	//nolint:lll // reason: calling RunProcess means that we can't pass CompressOptions directly.
 	if err := process.RunProcess(Name, true, false, redirect, "a", "-t"+opt.FormatFormat, dest, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
 		return CouldNotCompress, err
 	}
@@ -83,7 +83,7 @@ func CompressWithBin(src, dest, bin string, redirectStd bool, opts ...Compressio
 		return ProcessNotFound, ErrSevenZipNotFound
 	}
 
-	//nolint:lll // allowed
+	//nolint:lll // reason: calling RunProcess means that we can't pass CompressOptions directly.
 	if err := process.RunProcess(bin, true, true, redirectStd, "a", "-t"+opt.FormatFormat, dest, src+"/*", opt.Level, opt.Method, opt.DictionarySize, opt.FastBytes, opt.SolidBlockSize, opt.Multithreading, opt.Memory); err != nil {
 		return CouldNotCompress, err
 	}

@@ -30,7 +30,7 @@ import (
 )
 
 // AllocConsole allocates a new console for the current process.
-func AllocConsole() (aIn, aOut, aErr io.Writer, e error) { //nolint:nonamedreturns // allowed
+func AllocConsole() (aIn, aOut, aErr io.Writer, e error) { //nolint:nonamedreturns // reason: differentiate between writers.
 	kernal32 := syscall.NewLazyDLL("kernel32.dll")
 	allocConsole := kernal32.NewProc("AllocConsole")
 

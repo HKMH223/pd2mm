@@ -59,7 +59,7 @@ func NewCommand(args []string, name string, count int) ([]string, error) {
 			return nil, errExpectedArgs(count, len(args)-BinSize)
 		}
 
-		return nil, fmt.Errorf("%s not found", name) //nolint:err113 // allowed
+		return nil, fmt.Errorf("%s not found", name) //nolint:err113 // reason: name must be known.
 	}
 
 	return nil, ErrNoFunctionName
@@ -101,5 +101,5 @@ func CheckArgumentCount(args []string, expected int) error {
 
 // errexpectedArgs returns an error indicating that the number of arguments is incorrect.
 func errExpectedArgs(expected, got int) error {
-	return fmt.Errorf("expected: %d arguments but got %d", expected, got) //nolint:err113 // allowed
+	return fmt.Errorf("expected: %d arguments but got %d", expected, got) //nolint:err113 // reason: values must be known.
 }

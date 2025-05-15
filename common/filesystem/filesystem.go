@@ -43,7 +43,7 @@ var (
 	errFileExists  = errors.New("file exists in destination path")
 )
 
-var ReservedHostnames = []string{ //nolint:gochecknoglobals // allowed
+var ReservedHostnames = []string{ //nolint:gochecknoglobals // reason: ReservedHostNames is constant.
 	"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
 	"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
 	"PRN", "AUX", "NUL",
@@ -54,7 +54,7 @@ func CheckPathForProblemLocations(path string) (bool, PathCheck) {
 	path = strings.ToLower(strings.ReplaceAll(TrimPath(path), "\\", "/"))
 	parts := strings.Split(path, "/")
 
-	defaultCheck := PathCheck{} //nolint:exhaustruct // allowed
+	defaultCheck := PathCheck{} //nolint:exhaustruct // reason: default check does not need data.
 	defaultPaths := DefaultProblemPaths()
 
 	for _, check := range defaultPaths {

@@ -28,10 +28,12 @@ import (
 
 // CopyFile copies a file from the source to the destination.
 // It skips files that are not allowed to be copied by pathCheck.
+//
+//nolint:lll // reason: struct function increases size.
 func CopyFile(src, dest string) error {
-	return filesystem.Copy(src, dest, copy.Options{Skip: func(_ os.FileInfo, src, dest string) (bool, error) { //nolint:exhaustruct // allowed
+	return filesystem.Copy(src, dest, copy.Options{Skip: func(_ os.FileInfo, src, dest string) (bool, error) { //nolint:exhaustruct // reason: not all options are needed.
 		return PathCheck(src, dest), nil
-	}, PermissionControl: copy.AddPermission(0o666)}) //nolint:mnd // allowed
+	}, PermissionControl: copy.AddPermission(0o666)})
 }
 
 // PathCheck checks if a file is allowed to be copied by the given source and destination paths.
@@ -50,10 +52,10 @@ func PathCheck(src, dest string) bool {
 func IsSafeAction(result string, check filesystem.PathCheck) bool {
 	switch check.Action {
 	case filesystem.PathCheckActionWarn:
-		logger.SharedLogger.Warn("Problematic path located", "path", result, "type", check.Type, "target", check.Target)
+		logger.SharedLogger.Warn("problematic path located", "path", result, "type", check.Type, "target", check.Target)
 		return true
 	default:
-		logger.SharedLogger.Error("Problematic path located", "path", result, "type", check.Type, "target", check.Target)
+		logger.SharedLogger.Error("problematic path located", "path", result, "type", check.Type, "target", check.Target)
 		return false
 	}
 }

@@ -27,10 +27,12 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
+// Start starts the program.
 func Start(flags Flags, configs []Config, update func()) {
 	flags.Run(configs, update)
 }
 
+// ConfigNames returns the names of the configs.
 func ConfigNames(flags Flags) []string {
 	var entries []string
 
@@ -39,7 +41,8 @@ func ConfigNames(flags Flags) []string {
 	} else {
 		files, err := filesystem.GetTopFiles(lang.Lang("programName"))
 		if err != nil {
-			logger.SharedLogger.Fatal("Failed to get files", "err", err)
+			logger.SharedLogger.Error("failed to get files", "err", err)
+			return entries
 		}
 
 		for _, file := range files {
@@ -52,6 +55,7 @@ func ConfigNames(flags Flags) []string {
 	return entries
 }
 
+// Configs returns the configs.
 func Configs(flags Flags) []Config {
 	var configs []Config
 

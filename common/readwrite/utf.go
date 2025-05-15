@@ -24,11 +24,11 @@ import "unicode/utf16"
 func Utf8ToUtf16(utf8 string) []byte {
 	bytes := []byte(utf8)
 	u16Runes := utf16.Encode([]rune(string(bytes)))
-	u16Bytes := make([]byte, len(u16Runes)*2) //nolint:mnd // testcase
+	u16Bytes := make([]byte, len(u16Runes)*2) //nolint:mnd // reason: required size of UTF16 bytes.
 
 	for i, r := range u16Runes {
 		u16Bytes[i*2] = byte(r)
-		u16Bytes[i*2+1] = byte(r >> 8) //nolint:mnd // testcase
+		u16Bytes[i*2+1] = byte(r >> 8) //nolint:mnd // reason: bitwise right shift by 8 bits.
 	}
 
 	return u16Bytes

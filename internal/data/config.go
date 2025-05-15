@@ -26,7 +26,7 @@ import (
 	"github.com/tidwall/jsonc"
 )
 
-var FileTypes = []string{".jsonc", ".json"} //nolint:gochecknoglobals // allowed
+var FileTypes = []string{".jsonc", ".json"} //nolint:gochecknoglobals // reason: file types are needed across packages.
 
 type Config struct {
 	Mods []PathSearch `json:"mods"`
@@ -74,7 +74,7 @@ func Read(path string) (Config, error) {
 		return Config{}, err
 	}
 
-	c := Config{} //nolint:exhaustruct // allowed
+	c := Config{} //nolint:exhaustruct // reason: umarshalling data into struct.
 	if err := json.Unmarshal(jsonc.ToJSON(data), &c); err != nil {
 		return Config{}, err
 	}

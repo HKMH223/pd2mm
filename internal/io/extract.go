@@ -33,7 +33,7 @@ func Extract(flags data.Flags, search data.PathSearch) error {
 	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Extract)
 
 	if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Extract)); err != nil {
-		logger.SharedLogger.Warn("Failed to delete directory", "path", search.Extract, "err", err)
+		logger.SharedLogger.Warn("failed to delete directory", "path", search.Extract, "err", err)
 	}
 
 	source := filesystem.FromCwd(search.Path)

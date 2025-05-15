@@ -22,7 +22,7 @@ import (
 	"github.com/Xuanwo/go-locale"
 )
 
-//nolint:gochecknoinits // allowed
+//nolint:gochecknoinits // reason: init is needed for detecting language.
 func init() {
 	tag, err := locale.Detect()
 	if err != nil {

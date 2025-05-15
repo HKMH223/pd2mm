@@ -41,10 +41,10 @@ func IsMatch(str []byte, regex string) bool {
 	return re.Match(str)
 }
 
-// StringToBytes converts a string to bytes.
+// StringToBytes converts a string to bytes with padding.
 func StringToBytes(str string) []byte {
 	tmp := []byte(str)
-	tmp = append(tmp, bytes.Repeat([]byte{0}, 2-(len(tmp)%2))...) //nolint:mnd // allowed
+	tmp = append(tmp, bytes.Repeat([]byte{0}, 2-(len(tmp)%2))...) //nolint:mnd // reason: padding length.
 
 	return tmp
 }

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//nolint:all // nolint
+//nolint:all // reason: hash function.
 package murmurhash3
 
 import (

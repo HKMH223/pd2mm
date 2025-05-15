@@ -32,7 +32,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-//nolint:gochecknoglobals // allowed
+//nolint:gochecknoglobals // reason: only call NewLazyDLL and NewProc once per variable.
 var (
 	user32   = windows.NewLazyDLL("user32.dll")
 	kernal32 = syscall.NewLazyDLL("kernel32.dll")
@@ -117,11 +117,11 @@ func GetExecutableName(pid uint32) (string, error) {
 
 	defer func() {
 		if err := syscall.CloseHandle(syscall.Handle(hproc)); err != nil {
-			log.Fatalf("Failed to close handle: %s", err)
+			log.Fatalf("failed to close handle: %s", err)
 		}
 	}()
 
-	buf := make([]uint16, 1024) //nolint:mnd // allowed
+	buf := make([]uint16, 1024) //nolint:mnd // reason: one megabyte buffer.
 
 	ret, _, err := procGetModuleFileNameEx.Call(
 		hproc,
@@ -173,5 +173,5 @@ func GetForegroundWindowTitle() (string, error) {
 // Set the hide window attribute.
 func setHideWindowAttr(cmd *exec.Cmd, hideWindow bool) {
 	// cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: 0x08000000}
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: hideWindow} //nolint:exhaustruct // allowed
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: hideWindow} //nolint:exhaustruct // reason: not all options are needed.
 }

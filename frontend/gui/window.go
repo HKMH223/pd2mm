@@ -30,12 +30,15 @@ import (
 	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
+//nolint:gochecknoglobals // reason: used by multiple functions.
 var (
-	sashPos1       float32      = 500 //nolint:gochecknoglobals // allowed
-	sashPos2       float32      = 300 //nolint:gochecknoglobals // allowed
-	buf            bytes.Buffer       //nolint:gochecknoglobals // allowed
-	configs        []string           //nolint:gochecknoglobals // allowed
-	selectedConfig int32              //nolint:gochecknoglobals // allowed
+	width                  = 840
+	height                 = 500
+	sashPos1       float32 = 500
+	sashPos2       float32 = 300
+	buf            bytes.Buffer
+	configs        []string
+	selectedConfig int32
 )
 
 // StartApp is the main entry point for pd2mm.
@@ -46,16 +49,21 @@ func StartApp(version string, logFile io.Writer) {
 	// ConfigNames either takes a the flag config, otherwise get all configs in the directory.
 	// We want to get all configs.
 	data.Flag.Config = ""
+
 	configs = pd2mm.ConfigNames(pd2mm.Flags{Flags: data.Flag})
+	if len(configs) == 0 {
+		configs = append(configs, lang.Lang("defaultConfigPath"))
+	}
 	// pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() { giu.Update() })
-	wnd := giu.NewMasterWindow("pd2mm - "+version, 840, 500, 0) //nolint:mnd // allowed
+	wnd := giu.NewMasterWindow("pd2mm - "+version, width, height, 0)
 	wnd.Run(window)
 }
 
 func start() {
 	config, err := data.Read(safe.Slice(configs, int(selectedConfig)))
 	if err != nil {
-		logger.SharedLogger.Fatal("Failed to read configuration file", "err", err)
+		logger.SharedLogger.Error("failed to read configuration file", "err", err)
+		return
 	}
 
 	configs := []pd2mm.Config{{Config: &config}}
@@ -66,7 +74,7 @@ func start() {
 	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() { giu.Update() })
 }
 
-//nolint:lll // allowed
+//nolint:lll // reason: function chaining is used by giu.
 func window() {
 	giu.SingleWindow().Layout(
 		giu.Condition(pd2mm.IsRunning, giu.Label("Working..."), nil),

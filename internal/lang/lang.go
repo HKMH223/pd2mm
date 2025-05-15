@@ -25,14 +25,14 @@ import (
 	"golang.org/x/text/language"
 )
 
-var langmap = map[string]map[string]string{ //nolint:gochecknoglobals // allowed
+var langmap = map[string]map[string]string{ //nolint:gochecknoglobals // reason: map used to set language and get keys.
 	"zh": Zh,
 	"en": En,
 }
 
-var lang map[string]string //nolint:gochecknoglobals // allowed
+var lang map[string]string //nolint:gochecknoglobals // reason: current language.
 
-var lock = sync.RWMutex{} //nolint:gochecknoglobals // allowed
+var lock = sync.RWMutex{} //nolint:gochecknoglobals // reason: lock used across functions.
 
 // SetLanguage sets the language of the program.
 func SetLanguage(languge string) error {
