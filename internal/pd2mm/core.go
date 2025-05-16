@@ -51,19 +51,19 @@ func (c Config) Process(ps PathSearch) error {
 
 // process handles copying files with the given PathSearch.
 func (c Config) process(search PathSearch) error {
-	directories, err := filesystem.GetTopDirectories(filesystem.FromCwd(search.Extract))
+	directories, err := filesystem.GetTopDirectories(filesystem.FromCwd(search.Extract.Path))
 	if err != nil {
-		logger.SharedLogger.Debug("failed to get directories", "path", search.Extract, "err", err)
+		logger.SharedLogger.Warn("failed to get directories", "path", search.Extract.Path, "err", err)
 		return err
 	}
 
 	for _, directory := range directories {
-		c.checkIncludeData(strings.ReplaceAll(filepath.Join(search.Extract, directory), "\\", "/"), search)
+		c.checkIncludeData(filesystem.Normalize(filepath.Join(search.Extract.Path, directory)), search)
 	}
 
-	if search.Export != "" {
-		if err := io.CopyFile(search.Output, search.Export); err != nil {
-			return &MError{Header: "process", Message: fmt.Sprintf("failed to copy '%s' to '%s'", search.Output, search.Export), Err: err}
+	if search.Export.Path != "" {
+		if err := io.CopyFile(search.Output.Path, search.Export.Path); err != nil {
+			return &MError{Header: "process", Message: fmt.Sprintf("failed to copy '%s' to '%s'", search.Output.Path, search.Export.Path), Err: err}
 		}
 	}
 
@@ -75,15 +75,15 @@ func (c Config) checkIncludeData(path string, search PathSearch) {
 	files := filesystem.GetFiles(filesystem.FromCwd(path))
 
 	for _, file := range files {
-		source := strings.ReplaceAll(file, "\\", "/")
+		source := filesystem.Normalize(file)
 
 		for _, include := range search.Include {
-			if !strings.Contains(source, search.formatString(include.Path)) {
+			if !strings.Contains(source, search.FormatString(include.Path)) {
 				continue
 			}
 
-			if err := c.copyExpected(source, search.formatString(include.To), false, search); err != nil {
-				logger.SharedLogger.Error("failed to copy", "source", source, "destination", search.formatString(include.To), "err", err)
+			if err := c.copyExpected(source, search.FormatString(include.To), false, search); err != nil {
+				logger.SharedLogger.Error("failed to copy", "source", source, "destination", search.FormatString(include.To), "err", err)
 			}
 		}
 
@@ -95,10 +95,10 @@ func (c Config) checkIncludeData(path string, search PathSearch) {
 
 // Handle checkExcludeData settings for a given path.
 func (c Config) checkExcludeData(path string, search PathSearch) bool {
-	parts := strings.Split(strings.ReplaceAll(path, "\\", "/"), "/")
+	parts := strings.Split(filesystem.Normalize(path), "/")
 
 	for _, exclude := range search.Exclude {
-		if util.ContainsSubslice(parts, search.formatSlice(exclude)) {
+		if util.ContainsSubslice(parts, search.FormatSlice(exclude)) {
 			return false
 		}
 	}
@@ -135,12 +135,12 @@ func (c Config) checkExpectsData(path string, search PathSearch) (bool, error) {
 func (c Config) expectedIsFile(source []string, search PathSearch, expect data.Expect) (bool, error) {
 	path := strings.Join(source, "/")
 
-	destination := filepath.Join(search.Output, fixDestination(source, search, expect, false))
+	destination := filepath.Join(search.Output.Path, fixDestination(source, search, expect, false))
 	if destination == "" {
 		return false, nil
 	}
 
-	destination = strings.ReplaceAll(filesystem.FromCwd(destination), "\\", "/")
+	destination = filesystem.Normalize(filesystem.FromCwd(destination))
 
 	if util.ContainsSubslice(source, expect.Require) && util.ContainsSubslice(strings.Split(destination, "/"), expect.Require) {
 		path = strings.Join(safe.Range(source, 0, len(source)-len(expect.Require)), "/")
@@ -184,9 +184,9 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect d
 //nolint:lll // reason: logging.
 func (c Config) copyAdditional(search PathSearch) error {
 	for _, copy := range search.Copy {
-		logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", search.formatString(copy.From), "destination", search.formatString(copy.To))
+		logger.SharedLogger.Info(lang.Lang("copyingNotify"), "source", search.FormatString(copy.From), "destination", search.FormatString(copy.To))
 
-		src, dest := search.formatString(copy.From), search.formatString(copy.To)
+		src, dest := search.FormatString(copy.From), search.FormatString(copy.To)
 		if err := io.CopyFile(src, dest); err != nil {
 			return &MError{Header: "copyAdditional", Message: fmt.Sprintf("failed to copy '%s' to '%s'", src, dest), Err: err}
 		}
@@ -214,7 +214,7 @@ func fixDestination(parts []string, search PathSearch, expect data.Expect, dir b
 
 	if dir {
 		base = strings.Join(safe.Range(expect.Require, 0, len(expect.Require)-expect.Base), "/")
-		return filepath.Join(search.Output, base)
+		return filepath.Join(search.Output.Path, base)
 	}
 
 	return base
@@ -222,12 +222,12 @@ func fixDestination(parts []string, search PathSearch, expect data.Expect, dir b
 
 // copyExpected copies the source file or directory to the destination based on the provided PathSearch.
 func (c Config) copyExpected(src, dest string, expected bool, search PathSearch) error {
-	src = strings.ReplaceAll(src, "\\", "/")
-	dest = strings.ReplaceAll(dest, "\\", "/")
+	src = filesystem.Normalize(src)
+	dest = filesystem.Normalize(dest)
 
 	for _, rename := range search.Rename {
-		pathFmt := search.formatSlice(rename.Path)
-		fromFmt, toFmt := search.formatSlice(rename.From), search.formatSlice(rename.To)
+		pathFmt := search.FormatSlice(rename.Path)
+		fromFmt, toFmt := search.FormatSlice(rename.From), search.FormatSlice(rename.To)
 		parts := strings.Split(src, "/")
 
 		if util.ContainsSubslice(parts, pathFmt) {
@@ -265,25 +265,4 @@ func (c Config) parseExpectedAndCopy(src, dest string) error {
 	}
 
 	return nil
-}
-
-// Format a slice of paths using the current PathSearch settings.
-func (ps PathSearch) formatSlice(slice []string) []string {
-	result := []string{}
-
-	for _, item := range slice {
-		result = append(result, ps.formatString(item))
-	}
-
-	return result
-}
-
-// Replace keywords with relevant PathSearch settings.
-func (ps PathSearch) formatString(str string) string {
-	return util.Format(str, map[string]string{
-		"{path}":    ps.Path,
-		"{output}":  ps.Output,
-		"{extract}": ps.Extract,
-		"{export}":  ps.Export,
-	})
 }

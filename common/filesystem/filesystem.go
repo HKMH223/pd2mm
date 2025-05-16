@@ -49,9 +49,25 @@ var ReservedHostnames = []string{ //nolint:gochecknoglobals // reason: ReservedH
 	"PRN", "AUX", "NUL",
 }
 
+// Normalize replaces all backslashes with forward slashes in a string.
+func Normalize(str string) string {
+	return strings.ReplaceAll(str, "\\", "/")
+}
+
+// NormalizeSlice replaces all backslashes with forward slashes in a slice of strings.
+func NormalizeSlice(slice []string) []string {
+	result := []string{}
+
+	for _, item := range slice {
+		result = append(result, strings.ReplaceAll(item, "\\", "/"))
+	}
+
+	return result
+}
+
 // PathCheckTypeEndsWith checks if the file name ends with a given target.
 func CheckPathForProblemLocations(path string) (bool, PathCheck) {
-	path = strings.ToLower(strings.ReplaceAll(TrimPath(path), "\\", "/"))
+	path = strings.ToLower(Normalize(TrimPath(path)))
 	parts := strings.Split(path, "/")
 
 	defaultCheck := PathCheck{} //nolint:exhaustruct // reason: default check does not need data.
@@ -292,13 +308,36 @@ func Scan(scanner *bufio.Scanner) ([]string, error) {
 }
 
 // Delete a directory at the specified path.
-func DeleteDirectory(name string) error {
+func DeleteBaseDirectory(name string) error {
 	err := os.RemoveAll(name)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// Delete a directory at the specified path, skipping any files that match the skip function.
+func DeleteDirectory(name string, skip func(string) bool) error {
+	return filepath.Walk(name, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if path == name {
+			return nil
+		}
+
+		if !info.IsDir() {
+			if !skip(path) {
+				return os.Remove(path)
+			}
+
+			return nil
+		}
+
+		return nil
+	})
 }
 
 // Delete all empty directories at the specified path.

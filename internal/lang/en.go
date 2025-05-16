@@ -37,9 +37,12 @@ var En = map[string]string{
 	"watermarkPart1":    "This work is free of charge",
 	"watermarkPart2":    "If you paid money, you were scammed",
 
-	"configLabel":       "Select from available configs",
-	"configCustomLabel": "Set a custom config path",
-	"logLabel":          "The log file path",
-	"binLabel":          "The 7z file path",
-	"startButton":       "Start",
+	"configLabel":        "Select from available configs",
+	"configCustomLabel":  "Set a custom config path",
+	"logLabel":           "The log file path",
+	"binLabel":           "The 7z file path",
+	"startButton":        "Start",
+	"cleanExtractButton": "Clean Extract Directories",
+	"cleanExportButton":  "Clean Export Directories",
+	"cleanOutputButton":  "Clean Output Directories",
 }

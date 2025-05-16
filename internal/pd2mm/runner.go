@@ -20,7 +20,6 @@ package pd2mm
 
 import (
 	"github.com/hkmh223/pd2mm/common/benchmark"
-	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/internal/io"
 	"github.com/hkmh223/pd2mm/internal/lang"
@@ -78,8 +77,8 @@ func (f Flags) runner(config Config) {
 	for _, search := range config.Mods {
 		logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Output)
 
-		if err := filesystem.DeleteDirectory(filesystem.FromCwd(search.Output)); err != nil {
-			logger.SharedLogger.Warn("failed to delete directory", "path", search.Output, "err", err)
+		if err := search.CleanOutputDirectory(); err != nil {
+			logger.SharedLogger.Error(err)
 		}
 	}
 

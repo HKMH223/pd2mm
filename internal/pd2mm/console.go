@@ -52,7 +52,20 @@ func StartConsoleApp(logFile io.Writer, version func()) {
 		data.Flag.Config = ""
 	}
 
-	Flags{Flags: data.Flag}.RunWithError(Configs(Flags{Flags: data.Flag}), errCh)
+	configs := Configs(Flags{Flags: data.Flag})
+	if data.Flag.CleanExtract {
+		CleanExtractDirectory(configs)
+	}
+
+	if data.Flag.CleanExport {
+		CleanExportDirectory(configs)
+	}
+
+	if data.Flag.CleanOutput {
+		CleanOutputDirectory(configs)
+	}
+
+	Flags{Flags: data.Flag}.RunWithError(configs, errCh)
 
 	for err := range errCh {
 		if err != nil {

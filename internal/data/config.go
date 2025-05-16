@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/hkmh223/pd2mm/common/filesystem"
+	"github.com/hkmh223/pd2mm/common/util"
 	"github.com/tidwall/jsonc"
 )
 
@@ -33,15 +34,20 @@ type Config struct {
 }
 
 type PathSearch struct {
-	Path    string       `json:"path"`
-	Output  string       `json:"output"`
-	Extract string       `json:"extract"`
-	Export  string       `json:"export"`
+	Mods    string       `json:"mods"`
+	Output  PathInfo     `json:"output"`
+	Extract PathInfo     `json:"extract"`
+	Export  PathInfo     `json:"export"`
 	Include []Include    `json:"include"`
 	Exclude [][]string   `json:"exclude"`
 	Expects []Expect     `json:"expects"`
 	Copy    []PathCopy   `json:"copy"`
 	Rename  []PathRename `json:"rename"`
+}
+
+type PathInfo struct {
+	Path         string     `json:"path"`
+	ExcludeClean [][]string `json:"excludeClean"`
 }
 
 type PathRename struct {
@@ -96,14 +102,60 @@ func Write(path string, config Config) error {
 	return nil
 }
 
+// Format a slice of paths using the current PathSearch settings.
+func (ps PathSearch) FormatSlice(slice []string) []string {
+	result := []string{}
+
+	for _, item := range slice {
+		result = append(result, ps.FormatString(item))
+	}
+
+	return result
+}
+
+// Replace keywords with relevant PathSearch settings.
+func (ps PathSearch) FormatString(str string) string {
+	return util.Format(str, map[string]string{
+		"{path}":    ps.Mods,
+		"{output}":  ps.Output.Path,
+		"{extract}": ps.Extract.Path,
+		"{export}":  ps.Export.Path,
+	})
+}
+
+//nolint:funlen // reason: setting the default config
 func Default() Config {
 	return Config{
 		Mods: []PathSearch{
 			{
-				Path:    "pd2mm/pd2/mods",
-				Output:  "pd2mm/pd2/output/mods",
-				Extract: "pd2mm/pd2/extract/mods",
-				Export:  "",
+				Mods: "pd2mm/pd2/mods",
+				Output: PathInfo{
+					Path: "pd2mm/pd2/output/mods",
+					ExcludeClean: [][]string{
+						{"{export}", "saves"},
+						{"{export}", "logs"},
+						{"{output}", "saves"},
+						{"{output}", "logs"},
+					},
+				},
+				Extract: PathInfo{
+					Path: "pd2mm/pd2/extract/mods",
+					ExcludeClean: [][]string{
+						{"{export}", "saves"},
+						{"{export}", "logs"},
+						{"{output}", "saves"},
+						{"{output}", "logs"},
+					},
+				},
+				Export: PathInfo{
+					Path: "",
+					ExcludeClean: [][]string{
+						{"{export}", "saves"},
+						{"{export}", "logs"},
+						{"{output}", "saves"},
+						{"{output}", "logs"},
+					},
+				},
 				Include: []Include{},
 				Exclude: [][]string{},
 				Expects: []Expect{
@@ -124,10 +176,19 @@ func Default() Config {
 				Rename: []PathRename{},
 			},
 			{
-				Path:    "pd2mm/pd2/mod_overrides",
-				Output:  "pd2mm/pd2/output/mod_overrides",
-				Extract: "pd2mm/pd2/extract/mod_overrides",
-				Export:  "",
+				Mods: "pd2mm/pd2/mod_overrides",
+				Output: PathInfo{
+					Path:         "pd2mm/pd2/output/mod_overrides",
+					ExcludeClean: [][]string{},
+				},
+				Extract: PathInfo{
+					Path:         "pd2mm/pd2/extract/mod_overrides",
+					ExcludeClean: [][]string{},
+				},
+				Export: PathInfo{
+					Path:         "",
+					ExcludeClean: [][]string{},
+				},
 				Include: []Include{},
 				Exclude: [][]string{},
 				Expects: []Expect{
@@ -146,10 +207,19 @@ func Default() Config {
 				Rename: []PathRename{},
 			},
 			{
-				Path:    "pd2mm/pd2/maps",
-				Output:  "pd2mm/pd2/output/maps",
-				Extract: "pd2mm/pd2/extract/maps",
-				Export:  "",
+				Mods: "pd2mm/pd2/mod_overrides",
+				Output: PathInfo{
+					Path:         "pd2mm/pd2/output/mod_overrides",
+					ExcludeClean: [][]string{},
+				},
+				Extract: PathInfo{
+					Path:         "pd2mm/pd2/extract/mod_overrides",
+					ExcludeClean: [][]string{},
+				},
+				Export: PathInfo{
+					Path:         "",
+					ExcludeClean: [][]string{},
+				},
 				Include: []Include{},
 				Exclude: [][]string{},
 				Expects: []Expect{

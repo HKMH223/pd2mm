@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 )
 
@@ -100,15 +101,11 @@ func WithMessenger(src, dest string, msg Messenger) error {
 
 func convertPath(path, src string) string {
 	path = trimSrcPrefix(path, src)
-	path = replaceBackslashes(path)
+	path = filesystem.Normalize(path)
 
 	return path
 }
 
 func trimSrcPrefix(path, src string) string {
 	return strings.TrimPrefix(strings.TrimPrefix(path, src), string(filepath.Separator))
-}
-
-func replaceBackslashes(path string) string {
-	return strings.ReplaceAll(path, "\\", "/")
 }

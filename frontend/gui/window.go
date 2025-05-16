@@ -59,11 +59,61 @@ func StartApp(version string, logFile io.Writer) {
 	wnd.Run(window)
 }
 
-func start() {
-	config, err := data.Read(safe.Slice(configs, int(selectedConfig)))
+// startButton is the button that starts pd2mm.
+func startButton() {
+	configs, err := readConfigs()
 	if err != nil {
 		logger.SharedLogger.Error("failed to read configuration file", "err", err)
+
 		return
+	}
+
+	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() { giu.Update() })
+}
+
+// cleanExtractDirectoryButton is the button that cleans the extract path.
+func cleanExtractDirectoryButton() {
+	configs, err := readConfigs()
+	if err != nil {
+		logger.SharedLogger.Error("failed to read configuration file", "err", err)
+
+		return
+	}
+
+	pd2mm.CleanExtractDirectory(configs)
+}
+
+// cleanExportDirectoryButton is the button that cleans the export path.
+func cleanExportDirectoryButton() {
+	configs, err := readConfigs()
+	if err != nil {
+		logger.SharedLogger.Error("failed to read configuration file", "err", err)
+
+		return
+	}
+
+	pd2mm.CleanExportDirectory(configs)
+}
+
+// CleanOutputButton is the button that cleans the output path.
+func cleanOutputDirectoryButton() {
+	configs, err := readConfigs()
+	if err != nil {
+		logger.SharedLogger.Error("failed to read configuration file", "err", err)
+
+		return
+	}
+
+	pd2mm.CleanOutputDirectory(configs)
+}
+
+// Read all configs and return a slice of pd2mm.Configs.
+// Generally reading configs every time you need them isn't great, you could load them all once on startup.
+// However, it makes debugging capabilities much easier.
+func readConfigs() ([]pd2mm.Config, error) {
+	config, err := data.Read(safe.Slice(configs, int(selectedConfig)))
+	if err != nil {
+		return nil, err
 	}
 
 	configs := []pd2mm.Config{{Config: &config}}
@@ -71,7 +121,7 @@ func start() {
 		configs = pd2mm.Configs(pd2mm.Flags{Flags: data.Flag})
 	}
 
-	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() { giu.Update() })
+	return configs, nil
 }
 
 //nolint:lll // reason: function chaining is used by giu.
@@ -89,8 +139,11 @@ func window() {
 					},
 					giu.Layout{
 						giu.Separator(),
-						giu.Row(
-							giu.Button(lang.Lang("startButton")).OnClick(start).Disabled(pd2mm.IsRunning),
+						giu.Column(
+							giu.Button(lang.Lang("startButton")).OnClick(startButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
+							giu.Button(lang.Lang("cleanExtractButton")).OnClick(cleanExtractDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
+							giu.Button(lang.Lang("cleanExportButton")).OnClick(cleanExportDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
+							giu.Button(lang.Lang("cleanOutputButton")).OnClick(cleanOutputDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
 						),
 					},
 				),

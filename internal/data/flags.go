@@ -20,7 +20,6 @@ package data
 
 import (
 	"flag"
-	"strings"
 
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
@@ -28,21 +27,27 @@ import (
 )
 
 type Flags struct {
-	Version bool
-	Config  string
-	Log     string
-	Lang    string
-	Bin     string
+	Version      bool
+	Config       string
+	Log          string
+	Lang         string
+	Bin          string
+	CleanExtract bool
+	CleanExport  bool
+	CleanOutput  bool
 }
 
 var (
 	Flag     = NewFlags() //nolint:gochecknoglobals // reason: flags are needed across packages.
 	defaults = Flags{     //nolint:gochecknoglobals // reason: default flags are assigned in multiple functions.
-		Version: false,
-		Config:  lang.Lang("defaultConfigPath"),
-		Log:     lang.Lang("defaultLogPath"),
-		Lang:    "en",
-		Bin:     strings.ReplaceAll(filesystem.Combine(lang.Lang("programName"), "bin"), "\\", "/"),
+		Version:      false,
+		Config:       lang.Lang("defaultConfigPath"),
+		Log:          lang.Lang("defaultLogPath"),
+		Lang:         "en",
+		Bin:          filesystem.Normalize(filesystem.Combine(lang.Lang("programName"), "bin")),
+		CleanExtract: false,
+		CleanExport:  false,
+		CleanOutput:  false,
 	}
 )
 

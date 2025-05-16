@@ -18,7 +18,10 @@
 
 package pd2mm
 
-import "github.com/hkmh223/pd2mm/internal/data"
+import (
+	"github.com/hkmh223/pd2mm/common/logger"
+	"github.com/hkmh223/pd2mm/internal/data"
+)
 
 type Flags struct {
 	*data.Flags
@@ -30,4 +33,37 @@ type Config struct {
 
 type PathSearch struct {
 	*data.PathSearch
+}
+
+// Delete all files in the Extract path that are not in the list of exclusions.
+func CleanExtractDirectory(configs []Config) {
+	for _, c := range configs {
+		for _, ps := range c.Mods {
+			if err := ps.CleanExtractDirectory(); err != nil {
+				logger.SharedLogger.Warn(err)
+			}
+		}
+	}
+}
+
+// Delete all files in the Export path that are not in the list of exclusions.
+func CleanExportDirectory(configs []Config) {
+	for _, c := range configs {
+		for _, ps := range c.Mods {
+			if err := ps.CleanExportDirectory(); err != nil {
+				logger.SharedLogger.Warn(err)
+			}
+		}
+	}
+}
+
+// Delete all files in the Output path that are not in the list of exclusions.
+func CleanOutputDirectory(configs []Config) {
+	for _, c := range configs {
+		for _, ps := range c.Mods {
+			if err := ps.CleanOutputDirectory(); err != nil {
+				logger.SharedLogger.Warn(err)
+			}
+		}
+	}
 }
