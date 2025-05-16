@@ -127,6 +127,7 @@ linters:
         - "0o644"
         - "0o666"
         - "0o700"
+        - "0o755"
     nolintlint:
       require-explanation: true
       require-specific: false

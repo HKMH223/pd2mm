@@ -19,10 +19,10 @@
 package main
 
 import (
-	"bytes"
 	"io"
 
 	giu "github.com/AllenDang/giu"
+	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/safe"
 	"github.com/hkmh223/pd2mm/internal/data"
@@ -36,7 +36,7 @@ var (
 	_height                 = 500
 	_sashPos1       float32 = 500
 	_sashPos2       float32 = 300
-	_buf            bytes.Buffer
+	_buf                    = filesystem.NewLineRingBuffer(100) //nolint:mnd // reason: line count
 	_configs        []string
 	_selectedConfig int32
 	_disabled       bool
@@ -44,7 +44,7 @@ var (
 
 // StartApp is the main entry point for pd2mm.
 func StartApp(version string, logFile io.Writer) error {
-	logger.RegisterLogger(logFile, &_buf)
+	logger.RegisterLogger(logFile, _buf)
 	logger.SharedLogger.Info("Initialized!")
 
 	// ConfigNames either takes a the flag config, otherwise get all configs in the directory.
