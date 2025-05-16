@@ -27,14 +27,12 @@ import (
 	"syscall"
 
 	"github.com/hkmh223/pd2mm/common/ansi"
+	"github.com/hkmh223/pd2mm/common/process"
 )
 
 // AllocConsole allocates a new console for the current process.
 func AllocConsole() (aIn, aOut, aErr io.Writer, e error) { //nolint:nonamedreturns // reason: differentiate between writers.
-	kernal32 := syscall.NewLazyDLL("kernel32.dll")
-	allocConsole := kernal32.NewProc("AllocConsole")
-
-	r0, _, err0 := syscall.SyscallN(allocConsole.Addr(), 0, 0, 0, 0)
+	r0, _, err0 := syscall.SyscallN(process.ProcAllocConsole.Addr(), 0, 0, 0, 0)
 	if r0 == 0 {
 		return nil, nil, nil, fmt.Errorf("could not allocate console: %w. check build flags", err0)
 	}

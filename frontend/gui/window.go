@@ -32,31 +32,40 @@ import (
 
 //nolint:gochecknoglobals // reason: used by multiple functions.
 var (
-	width                  = 840
-	height                 = 500
-	sashPos1       float32 = 500
-	sashPos2       float32 = 300
-	buf            bytes.Buffer
-	configs        []string
-	selectedConfig int32
+	_width                  = 840
+	_height                 = 500
+	_sashPos1       float32 = 500
+	_sashPos2       float32 = 300
+	_buf            bytes.Buffer
+	_configs        []string
+	_selectedConfig int32
+	_disabled       bool
 )
 
 // StartApp is the main entry point for pd2mm.
-func StartApp(version string, logFile io.Writer) {
-	logger.SharedLogger = logger.NewMultiLogger(logFile, &buf)
+func StartApp(version string, logFile io.Writer) error {
+	logger.RegisterLogger(logFile, &_buf)
 	logger.SharedLogger.Info("Initialized!")
 
 	// ConfigNames either takes a the flag config, otherwise get all configs in the directory.
 	// We want to get all configs.
 	data.Flag.Config = ""
 
-	configs = pd2mm.ConfigNames(pd2mm.Flags{Flags: data.Flag})
-	if len(configs) == 0 {
-		configs = append(configs, lang.Lang("defaultConfigPath"))
+	var err error
+
+	_configs, err = pd2mm.ConfigNames(pd2mm.Flags{Flags: data.Flag})
+	if err != nil {
+		return err
 	}
-	// pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, func() { giu.Update() })
-	wnd := giu.NewMasterWindow("pd2mm - "+version, width, height, 0)
+
+	if len(_configs) == 0 {
+		_configs = append(_configs, lang.Lang("defaultConfigPath"))
+	}
+
+	wnd := giu.NewMasterWindow("pd2mm - "+version, _width, _height, 0)
 	wnd.Run(window)
+
+	return nil
 }
 
 // startButton is the button that starts pd2mm.
@@ -68,7 +77,11 @@ func startButton() {
 		return
 	}
 
-	pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() { giu.Update() })
+	//nolint:unparam // reason: update does not return error
+	go pd2mm.Start(pd2mm.Flags{Flags: data.Flag}, configs, func() error {
+		giu.Update()
+		return nil
+	})
 }
 
 // cleanExtractDirectoryButton is the button that cleans the extract path.
@@ -80,7 +93,11 @@ func cleanExtractDirectoryButton() {
 		return
 	}
 
-	pd2mm.CleanExtractDirectory(configs)
+	//nolint:unparam // reason: update does not return error
+	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Extract, func() error {
+		giu.Update()
+		return nil
+	})
 }
 
 // cleanExportDirectoryButton is the button that cleans the export path.
@@ -92,7 +109,11 @@ func cleanExportDirectoryButton() {
 		return
 	}
 
-	pd2mm.CleanExportDirectory(configs)
+	//nolint:unparam // reason: update does not return error
+	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Export, func() error {
+		giu.Update()
+		return nil
+	})
 }
 
 // CleanOutputButton is the button that cleans the output path.
@@ -104,21 +125,28 @@ func cleanOutputDirectoryButton() {
 		return
 	}
 
-	pd2mm.CleanOutputDirectory(configs)
+	//nolint:unparam // reason: update does not return error
+	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Output, func() error {
+		giu.Update()
+		return nil
+	})
 }
 
 // Read all configs and return a slice of pd2mm.Configs.
 // Generally reading configs every time you need them isn't great, you could load them all once on startup.
 // However, it makes debugging capabilities much easier.
 func readConfigs() ([]pd2mm.Config, error) {
-	config, err := data.Read(safe.Slice(configs, int(selectedConfig)))
+	config, err := data.Read(safe.Slice(_configs, int(_selectedConfig)))
 	if err != nil {
 		return nil, err
 	}
 
 	configs := []pd2mm.Config{{Config: &config}}
 	if data.Flag.Config != "" {
-		configs = pd2mm.Configs(pd2mm.Flags{Flags: data.Flag})
+		configs, err = pd2mm.Configs(pd2mm.Flags{Flags: data.Flag})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return configs, nil
@@ -126,30 +154,36 @@ func readConfigs() ([]pd2mm.Config, error) {
 
 //nolint:lll // reason: function chaining is used by giu.
 func window() {
+	if pd2mm.SharedRunner.IsActive() || pd2mm.SharedCleaner.IsActive() {
+		_disabled = true
+	} else if !pd2mm.SharedRunner.IsActive() && !pd2mm.SharedCleaner.IsActive() {
+		_disabled = false
+	}
+
 	giu.SingleWindow().Layout(
-		giu.Condition(pd2mm.IsRunning, giu.Label("Working..."), nil),
-		giu.SplitLayout(giu.DirectionHorizontal, &sashPos2,
+		giu.Condition(_disabled, giu.Label(lang.Lang("workingNotify")), nil),
+		giu.SplitLayout(giu.DirectionHorizontal, &_sashPos2,
 			giu.Layout{
-				giu.SplitLayout(giu.DirectionVertical, &sashPos1,
+				giu.SplitLayout(giu.DirectionVertical, &_sashPos1,
 					giu.Layout{
-						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Bin).Label(lang.Lang("binLabel"))),
-						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Log).Label(lang.Lang("logLabel"))),
-						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.Combo(lang.Lang("configLabel"), safe.Slice(configs, int(selectedConfig)), configs, &selectedConfig)),
-						giu.Style().SetDisabled(pd2mm.IsRunning).To(giu.InputText(&data.Flag.Config).Hint(lang.Lang("defaultConfigPath")).Label(lang.Lang("configCustomLabel"))),
+						giu.Style().SetDisabled(_disabled).To(giu.InputText(&data.Flag.Bin).Label(lang.Lang("binLabel"))),
+						giu.Style().SetDisabled(_disabled).To(giu.InputText(&data.Flag.Log).Label(lang.Lang("logLabel"))),
+						giu.Style().SetDisabled(_disabled).To(giu.Combo(lang.Lang("configLabel"), safe.Slice(_configs, int(_selectedConfig)), _configs, &_selectedConfig)),
+						giu.Style().SetDisabled(_disabled).To(giu.InputText(&data.Flag.Config).Hint(lang.Lang("defaultConfigPath")).Label(lang.Lang("configCustomLabel"))),
 					},
 					giu.Layout{
 						giu.Separator(),
 						giu.Column(
-							giu.Button(lang.Lang("startButton")).OnClick(startButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
-							giu.Button(lang.Lang("cleanExtractButton")).OnClick(cleanExtractDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
-							giu.Button(lang.Lang("cleanExportButton")).OnClick(cleanExportDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
-							giu.Button(lang.Lang("cleanOutputButton")).OnClick(cleanOutputDirectoryButton).Disabled(pd2mm.IsRunning).Size(-1, 0),
+							giu.Button(lang.Lang("startButton")).OnClick(startButton).Disabled(_disabled).Size(-1, 0),
+							giu.Button(lang.Lang("cleanExtractButton")).OnClick(cleanExtractDirectoryButton).Disabled(_disabled).Size(-1, 0),
+							giu.Button(lang.Lang("cleanExportButton")).OnClick(cleanExportDirectoryButton).Disabled(_disabled).Size(-1, 0),
+							giu.Button(lang.Lang("cleanOutputButton")).OnClick(cleanOutputDirectoryButton).Disabled(_disabled).Size(-1, 0),
 						),
 					},
 				),
 			}, giu.Layout{
 				giu.Child().Layout(
-					giu.Label(buf.String()),
+					giu.Label(_buf.String()),
 				),
 			}),
 	)

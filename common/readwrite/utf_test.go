@@ -26,7 +26,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/readwrite"
 )
 
-var errUnexpectedBytes = errors.New("unexpected bytes")
+var ErrUnexpectedBytes = errors.New("unexpected bytes")
 
 func TestUtf8ToUtf16(t *testing.T) {
 	t.Parallel()
@@ -35,6 +35,6 @@ func TestUtf8ToUtf16(t *testing.T) {
 	o := []byte{97, 0, 97, 0, 97, 0, 98, 0, 98, 0, 98, 0, 99, 0, 99, 0, 99, 0}
 
 	if !bytes.Equal(b, o) {
-		t.Fatal(errUnexpectedBytes)
+		t.Fatal(ErrUnexpectedBytes)
 	}
 }

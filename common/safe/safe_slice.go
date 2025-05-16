@@ -39,11 +39,9 @@ func HasIndex[S ~[]E, E comparable](s S, v E) int {
 // Slice bounds checks to check if a slice is within bounds.
 // If the slice is out of bounds, an error will be logged and the program will exit.
 // Otherwise, the slice will be returned.
-//
-//nolint:ireturn // reason: T should not have constraints.
-func Slice[T any](parts []T, index int) T {
+func Slice[T any](parts []T, index int) T { //nolint:ireturn // reason: T should not have constraints.
 	return RangeWithCaller(parts, index, index+1, defaultCaller)[0] // There will only ever be one element in the returned slice.
-}
+} //nolint:ireturn // reason: T should not have constraints.
 
 // Range bounds checks to check if a slice is within bounds.
 // If the slice is out of bounds, an error will be logged and the program will exit.
@@ -56,10 +54,10 @@ func Range[T any](parts []T, start, end int) []T {
 // If the slice is out of bounds, an error will be logged and the program will exit.
 // Otherwise, the slice will be returned.
 //
-//nolint:ireturn // reason: T should not have constraints.
-func SliceWithCaller[T any](parts []T, index int, caller func(string)) T {
+
+func SliceWithCaller[T any](parts []T, index int, caller func(string)) T { //nolint:ireturn // reason: T should not have constraints.
 	return RangeWithCaller(parts, index, index+1, caller)[0] // There will only ever be one element in the returned slice.
-}
+} //nolint:ireturn // reason: T should not have constraints.
 
 // RangeWithCaller bounds checks to check if a slice is within bounds.
 // If the slice is out of bounds, an error will be logged and the program will exit.

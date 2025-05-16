@@ -25,40 +25,41 @@ import (
 	"golang.org/x/text/language"
 )
 
-var langmap = map[string]map[string]string{ //nolint:gochecknoglobals // reason: map used to set language and get keys.
+var _langmap = map[string]map[string]string{ //nolint:gochecknoglobals // reason: map used to set language and get keys.
 	"zh": Zh,
 	"en": En,
 }
 
-var lang map[string]string //nolint:gochecknoglobals // reason: current language.
-
-var lock = sync.RWMutex{} //nolint:gochecknoglobals // reason: lock used across functions.
+var (
+	_lang map[string]string //nolint:gochecknoglobals // reason: current language.
+	_lock = sync.RWMutex{}  //nolint:gochecknoglobals // reason: lock used across functions.
+)
 
 // SetLanguage sets the language of the program.
 func SetLanguage(languge string) error {
-	lock.Lock()
-	defer lock.Unlock()
+	_lock.Lock()
+	defer _lock.Unlock()
 
 	tag := language.Make(languge)
 	lstr, _ := tag.Base()
 
-	if langmap[lstr.String()] == nil {
+	if _langmap[lstr.String()] == nil {
 		return ErrNotFind
 	}
 
-	lang = langmap[lstr.String()]
+	_lang = _langmap[lstr.String()]
 
 	return nil
 }
 
 // Lang returns the value of a key in the current language.
 func Lang(key string) string {
-	lock.RLock()
-	defer lock.RUnlock()
+	_lock.RLock()
+	defer _lock.RUnlock()
 
-	word, ok := lang[key]
+	word, ok := _lang[key]
 	if !ok {
-		return langmap["en"][key]
+		return _langmap["en"][key]
 	}
 
 	return word

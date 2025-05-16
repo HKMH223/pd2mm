@@ -128,19 +128,22 @@ func (w *Writer) Position() (int64, error) {
 }
 
 // Get the size of the file.
-func (w *Writer) Size() (int64, error) {
+//
+//nolint:nonamedreturns // reason: return error from defered function.
+func (w *Writer) Size() (size int64, err error) {
 	cur, err := w.file.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return 0, err
 	}
 
 	defer func() {
-		if _, err := w.file.Seek(cur, io.SeekStart); err != nil {
-			panic(err)
+		if _, seekErr := w.file.Seek(cur, io.SeekStart); err != nil {
+			size = 0
+			err = seekErr
 		}
 	}()
 
-	size, err := w.file.Seek(0, io.SeekEnd)
+	size, err = w.file.Seek(0, io.SeekEnd)
 	if err != nil {
 		return 0, err
 	}

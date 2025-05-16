@@ -38,9 +38,9 @@ import (
 )
 
 var (
-	errNoNameFound = errors.New("name could not be found in file path")
-	errNoPathFound = errors.New("file path could not be found in file name")
-	errFileExists  = errors.New("file exists in destination path")
+	ErrNoNameFound = errors.New("name could not be found in file path")
+	ErrNoPathFound = errors.New("file path could not be found in file name")
+	ErrFileExists  = errors.New("file exists in destination path")
 )
 
 var ReservedHostnames = []string{ //nolint:gochecknoglobals // reason: ReservedHostNames is constant.
@@ -100,17 +100,7 @@ func Combine(pathA string, pathB ...string) string {
 }
 
 // Combine multiple paths starting with the current working directory.
-func FromCwd(pathA ...string) string {
-	str, err := fromCwd(pathA...)
-	if err != nil {
-		panic(err)
-	}
-
-	return str
-}
-
-// Combine multiple paths starting with the current working directory.
-func fromCwd(pathA ...string) (string, error) {
+func FromCwd(pathA ...string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -194,7 +184,7 @@ func CopyFile(src, dest string) error {
 
 // CopyAndRename copies files from the old path to a new path, replacing occurrences of an old name with a new name.
 func CopyAndRename(files []string, oldPath, newPath, oldName, newName string) error {
-	found := false
+	var found bool
 
 	for _, file := range files {
 		if strings.Contains(file, oldName) {
@@ -204,20 +194,20 @@ func CopyAndRename(files []string, oldPath, newPath, oldName, newName string) er
 	}
 
 	if !found {
-		return errNoNameFound
+		return ErrNoNameFound
 	}
 
 	for _, file := range files {
 		newName := strings.ReplaceAll(file, oldName, newName)
 
 		if !strings.Contains(newName, TrimPath(oldPath)) {
-			return errNoPathFound
+			return ErrNoPathFound
 		}
 
 		newFilePath := strings.ReplaceAll(newName, TrimPath(oldPath), newPath)
 
 		if Exists(newFilePath) {
-			return errFileExists
+			return ErrFileExists
 		}
 
 		if err := Copy(file, newFilePath); err != nil {
@@ -290,7 +280,7 @@ func OverwriteFile(file *os.File) error {
 
 // Scan a file and return all lines as a slice.
 func Scan(scanner *bufio.Scanner) ([]string, error) {
-	lines := []string{}
+	var lines []string
 
 	for scanner.Scan() {
 		if len(scanner.Text()) == 0 {
@@ -342,7 +332,7 @@ func DeleteDirectory(name string, skip func(string) bool) error {
 
 // Delete all empty directories at the specified path.
 func DeleteEmptyDirectories(dir string) error {
-	directories := []string{}
+	var directories []string
 
 	err := filepath.WalkDir(dir, func(path string, directory os.DirEntry, err error) error {
 		if err != nil {

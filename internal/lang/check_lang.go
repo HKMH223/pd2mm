@@ -22,15 +22,14 @@ import (
 	"github.com/Xuanwo/go-locale"
 )
 
-//nolint:gochecknoinits // reason: init is needed for detecting language.
-func init() {
+func SetupLanguage() error {
 	tag, err := locale.Detect()
 	if err != nil {
 		if err := SetLanguage("en"); err != nil {
-			panic(err)
+			return err
 		}
 
-		return
+		return nil
 	}
 
 	l, _ := tag.Base()
@@ -38,9 +37,11 @@ func init() {
 	err = SetLanguage(l.String())
 	if err != nil {
 		if err := SetLanguage("en"); err != nil {
-			panic(err)
+			return err
 		}
 
-		return
+		return nil
 	}
+
+	return nil
 }

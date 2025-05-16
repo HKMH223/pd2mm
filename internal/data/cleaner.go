@@ -21,6 +21,8 @@ package data
 import (
 	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/hkmh223/pd2mm/common/errors"
 	"github.com/hkmh223/pd2mm/common/filesystem"
@@ -29,69 +31,94 @@ import (
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-// Delete all files in the Extract path that are not in the list of exclusions.
-func (ps PathSearch) CleanExtractDirectory() error {
-	target := filesystem.FromCwd(ps.Extract.Path)
+var SharedCleaner = NewCleaner(func() error { return nil }) //nolint:gochecknoglobals // reason: used by generic cleaning functions
 
-	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", target)
+type Cleaner struct {
+	mu sync.Mutex
 
-	if err := filesystem.DeleteDirectory(target, func(s string) bool {
-		return skip(s, ps, ps.Extract)
-	}); err != nil {
-		return &errors.MError{Header: "CleanExtract", Message: "failed to delete directory: " + target, Err: err}
-	}
-
-	if err := filesystem.DeleteEmptyDirectories(target); err != nil {
-		return err
-	}
-
-	return nil
+	isCleaning atomic.Bool
+	Update     func() error
 }
 
-// Delete all files in the Export path that are not in the list of exclusions.
-func (ps PathSearch) CleanExportDirectory() error {
-	target := filesystem.FromCwd(ps.Export.Path)
-
-	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", target)
-
-	if err := filesystem.DeleteDirectory(target, func(s string) bool {
-		return skip(s, ps, ps.Export)
-	}); err != nil {
-		return &errors.MError{Header: "CleanExport", Message: "failed to delete directory: " + target, Err: err}
+// NewCleaner creates a new cleaner.
+func NewCleaner(update func() error) *Cleaner {
+	return &Cleaner{ //nolint:exhaustruct // reason: value is set
+		Update: update,
 	}
-
-	if err := filesystem.DeleteEmptyDirectories(target); err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// Delete all files in the Output path that are not in the list of exclusions.
-func (ps PathSearch) CleanOutputDirectory() error {
-	target := filesystem.FromCwd(ps.Output.Path)
+// RegisterUpdate registers an update function that is called after the cleaner finishes cleaning.
+func (c *Cleaner) RegisterUpdate(update func() error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.Update = update
+}
+
+// IsActive returns true if the cleaner is currently cleaning.
+func (c *Cleaner) IsActive() bool {
+	return c.isCleaning.Load()
+}
+
+// Delete all files in the path that are not in the list of exclusions.
+func (c *Cleaner) Clean(search PathSearch, info PathInfo) {
+	c.isCleaning.Store(true)
+
+	defer func() {
+		c.isCleaning.Store(false)
+		logger.SharedLogger.Info(lang.Lang("doneCleanerNotify"))
+
+		if err := c.Update(); err != nil {
+			logger.SharedLogger.Error(err)
+		}
+	}()
+
+	logger.SharedLogger.Info(lang.Lang("startingCleanerNotify"))
+
+	errCh := make(chan error, 1)
+	go search.CleanWithError(info, errCh)
+
+	for err := range errCh {
+		if err != nil {
+			logger.SharedLogger.Errorf("%s %v", lang.Lang("errorNotify"), err)
+		}
+	}
+}
+
+// Delete all files in the path that are not in the list of exclusions.
+func (search PathSearch) CleanWithError(info PathInfo, errCh chan<- error) {
+	defer close(errCh)
+
+	target, err := filesystem.FromCwd(info.Path)
+	if err != nil {
+		errCh <- err
+
+		return
+	}
 
 	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", target)
 
 	if err := filesystem.DeleteDirectory(target, func(s string) bool {
-		return skip(s, ps, ps.Output)
+		return skip(s, search, info)
 	}); err != nil {
-		return &errors.MError{Header: "CleanOutput", Message: "failed to delete directory: " + target, Err: err}
+		errCh <- &errors.MError{Header: "CleanWithError", Message: "failed to delete directory: " + target, Err: err}
+
+		return
 	}
 
 	if err := filesystem.DeleteEmptyDirectories(target); err != nil {
-		return err
-	}
+		errCh <- err
 
-	return nil
+		return
+	}
 }
 
 // Check if the file name should be excluded.
-func skip(name string, ps PathSearch, pi PathInfo) bool {
+func skip(name string, search PathSearch, info PathInfo) bool {
 	normalized := strings.Split(filesystem.Normalize(name), "/")
 
-	for _, exclude := range pi.ExcludeClean {
-		excludeNormalized := ps.formatSubSlices(exclude)
+	for _, exclude := range info.ExcludeClean {
+		excludeNormalized := search.formatSubSlices(exclude)
 
 		logger.SharedLogger.Info(normalized)
 		logger.SharedLogger.Info(excludeNormalized)
@@ -105,9 +132,10 @@ func skip(name string, ps PathSearch, pi PathInfo) bool {
 }
 
 // Format a slice of file names to be used in the exclude function.
-func (ps PathSearch) formatSubSlices(slice []string) []string {
-	normalized := ps.FormatSlice(filesystem.NormalizeSlice(slice))
-	result := []string{}
+func (search PathSearch) formatSubSlices(slice []string) []string {
+	normalized := search.FormatSlice(filesystem.NormalizeSlice(slice))
+
+	var result []string
 
 	for _, str := range normalized {
 		result = slices.Concat(result, strings.Split(str, "/"))

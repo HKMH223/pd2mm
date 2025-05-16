@@ -43,11 +43,11 @@ var DlfKey = []byte{ //nolint:gochecknoglobals // reason: DLF key is constant.
 var IV = make([]byte, 16) //nolint:gochecknoglobals,mnd // reason: IV is constant.
 
 var (
-	errDlfFileNotFound   = errors.New("error: DLF file not found")
-	errCipherTagNotFound = errors.New("error: Cipher tag not found")
-	errInvalidBase64Key  = errors.New("error: invalid base64 key")
-	errInvalidIVSize     = errors.New("error: invalid IV size")
-	errInvalidBufferSize = errors.New("error: invalid buffer size")
+	ErrDlfFileNotFound   = errors.New("error: DLF file not found")
+	ErrCipherTagNotFound = errors.New("error: Cipher tag not found")
+	ErrInvalidBase64Key  = errors.New("error: invalid base64 key")
+	ErrInvalidIVSize     = errors.New("error: invalid IV size")
+	ErrInvalidBufferSize = errors.New("error: invalid buffer size")
 )
 
 // NewHash creates a hash of the file at path.
@@ -112,7 +112,7 @@ func AESDecrypt(key, iv, buf []byte) ([]byte, error) { //nolint:varnamelen // re
 func AESDecryptBase64(kb64 string, iv, buf []byte) error { //nolint:varnamelen // reason: variable name used by cipher.NewCBCEncrypter().
 	key, err := base64.StdEncoding.DecodeString(kb64)
 	if err != nil {
-		return errInvalidBase64Key
+		return ErrInvalidBase64Key
 	}
 
 	block, err := aes.NewCipher(key)
@@ -121,11 +121,11 @@ func AESDecryptBase64(kb64 string, iv, buf []byte) error { //nolint:varnamelen /
 	}
 
 	if len(iv) != aes.BlockSize {
-		return errInvalidIVSize
+		return ErrInvalidIVSize
 	}
 
 	if len(buf) < aes.BlockSize {
-		return errInvalidBufferSize
+		return ErrInvalidBufferSize
 	}
 
 	mode := cipher.NewCBCDecrypter(block, iv)
@@ -158,7 +158,7 @@ func GetDLFAuto(cid string) ([]byte, error) {
 		}
 	}
 
-	return nil, errDlfFileNotFound
+	return nil, ErrDlfFileNotFound
 }
 
 // DecodeCipherTag decodes the cipher tag from the given data.
@@ -167,7 +167,7 @@ func DecodeCipherTag(dlf []byte) ([]byte, error) {
 	pos := strings.Index(data, CipherTag)
 
 	if pos == -1 {
-		return nil, errCipherTagNotFound
+		return nil, ErrCipherTagNotFound
 	}
 
 	pos += len(CipherTag)

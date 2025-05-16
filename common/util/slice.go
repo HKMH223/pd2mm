@@ -29,7 +29,7 @@ func Matches(parts, expected []string) int {
 		expect[e] = struct{}{}
 	}
 
-	count := 0
+	var count int
 
 	for _, part := range parts {
 		if _, found := expect[part]; found {

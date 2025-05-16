@@ -19,8 +19,10 @@
 package io
 
 import (
+	"fmt"
 	"runtime"
 
+	"github.com/hkmh223/pd2mm/common/errors"
 	"github.com/hkmh223/pd2mm/common/filesystem"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/sevenzip"
@@ -29,18 +31,28 @@ import (
 )
 
 // Extract extracts the contents of an archive to a specified directory.
-func Extract(flags data.Flags, search data.PathSearch) error {
+func Extract(flags data.Flags, search data.PathSearch) {
 	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Extract.Path)
 
-	if err := search.CleanExtractDirectory(); err != nil {
-		logger.SharedLogger.Warn(err)
-	}
+	data.SharedCleaner.RegisterUpdate(func() error {
+		source, err := filesystem.FromCwd(search.Mods)
+		if err != nil {
+			return err
+		}
 
-	source := filesystem.FromCwd(search.Mods)
-	destination := filesystem.FromCwd(search.Extract.Path)
-	logger.SharedLogger.Info(lang.Lang("extractingNotify"), "source", source, "destination", destination)
+		destination, err := filesystem.FromCwd(search.Extract.Path)
+		if err != nil {
+			return err
+		}
 
-	return extract(flags, source, destination)
+		if err := extract(flags, source, destination); err != nil {
+			return &errors.MError{Header: "Extract", Message: fmt.Sprintf("failed to extract '%s' to '%s'", source, destination), Err: err}
+		}
+
+		return nil
+	})
+
+	data.SharedCleaner.Clean(search, search.Extract)
 }
 
 // extract extracts the contents of an archive to a specified directory.
@@ -53,6 +65,8 @@ func extract(flags data.Flags, src, dest string) error {
 	}
 
 	for _, file := range files {
+		logger.SharedLogger.Info(lang.Lang("extractNotify"), "source", file, "destination", dest)
+
 		if filesystem.Exists(bin) {
 			if _, err := sevenzip.ExtractWithBin(file, dest, bin, false); err != nil {
 				return err

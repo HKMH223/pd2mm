@@ -19,50 +19,40 @@
 package pd2mm
 
 import (
-	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/internal/data"
 )
 
-type Flags struct {
-	*data.Flags
-}
+// ext.go should place extensions for third party packages here.
+// This file should be kept as small as possible.
 
-type Config struct {
-	*data.Config
-}
+type (
+	Flags      struct{ *data.Flags }
+	Config     struct{ *data.Config }
+	PathSearch struct{ *data.PathSearch }
+	Cleaner    struct{ *data.Cleaner }
+)
 
-type PathSearch struct {
-	*data.PathSearch
-}
+const (
+	Extract = iota + 1
+	Export
+	Output
+)
 
-// Delete all files in the Extract path that are not in the list of exclusions.
-func CleanExtractDirectory(configs []Config) {
-	for _, c := range configs {
-		for _, ps := range c.Mods {
-			if err := ps.CleanExtractDirectory(); err != nil {
-				logger.SharedLogger.Warn(err)
-			}
-		}
-	}
-}
+var SharedCleaner = Cleaner{data.SharedCleaner} //nolint:gochecknoglobals // reason: used by window
 
-// Delete all files in the Export path that are not in the list of exclusions.
-func CleanExportDirectory(configs []Config) {
-	for _, c := range configs {
-		for _, ps := range c.Mods {
-			if err := ps.CleanExportDirectory(); err != nil {
-				logger.SharedLogger.Warn(err)
-			}
-		}
-	}
-}
+// Clean cleans the specified path for each configuration.
+func (c Cleaner) Clean(configs []Config, path int, update func() error) {
+	SharedCleaner.RegisterUpdate(update)
 
-// Delete all files in the Output path that are not in the list of exclusions.
-func CleanOutputDirectory(configs []Config) {
-	for _, c := range configs {
-		for _, ps := range c.Mods {
-			if err := ps.CleanOutputDirectory(); err != nil {
-				logger.SharedLogger.Warn(err)
+	for _, config := range configs {
+		for _, search := range config.Mods {
+			switch path {
+			case Extract:
+				c.Cleaner.Clean(search, search.Extract)
+			case Export:
+				c.Cleaner.Clean(search, search.Export)
+			case Output:
+				c.Cleaner.Clean(search, search.Output)
 			}
 		}
 	}

@@ -32,7 +32,7 @@ func Download(url string) ([]byte, error) {
 // WithContext is a convenience function that validates the download parameters and then downloads the file.
 func WithContext(ctx context.Context, msg Messenger, url string) ([]byte, error) {
 	if url == "" {
-		return nil, errDownloadURLEmpty
+		return nil, ErrDownloadURLEmpty
 	}
 
 	msg.StartDownload(url)

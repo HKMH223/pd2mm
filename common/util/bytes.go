@@ -58,7 +58,7 @@ func FindAllByteOccurrences(data, pattern []byte) []int {
 func ReplaceByteOccurrences(original, expected, replacement []byte, occurrence int) []byte {
 	var result []byte
 
-	count := 0
+	var count int
 
 	for remaining := original; len(remaining) > 0; count++ {
 		index := bytes.Index(remaining, expected)

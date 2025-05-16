@@ -19,39 +19,66 @@
 package pd2mm
 
 import (
+	"sync"
+	"sync/atomic"
+
 	"github.com/hkmh223/pd2mm/common/benchmark"
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/internal/io"
 	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
-var IsRunning bool //nolint:gochecknoglobals // reason: used by window.
+var SharedRunner = NewRunner(func() error { return nil }) //nolint:gochecknoglobals // reason: used by generic cleaning functions
+
+type Runner struct {
+	mu sync.Mutex
+
+	isRunning atomic.Bool
+	Update    func() error
+}
+
+// NewRunner creates a new Runner.
+func NewRunner(update func() error) *Runner {
+	return &Runner{ //nolint:exhaustruct // reason: value is set
+		Update: update,
+	}
+}
+
+func (r *Runner) RegisterUpdate(update func() error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.Update = update
+}
+
+// IsActive returns true if the Runner is currently cleaning.
+func (r *Runner) IsActive() bool {
+	return r.isRunning.Load()
+}
 
 // Run runs the program.
-func (f Flags) Run(configs []Config, update func()) {
-	errCh := make(chan error, 3) //nolint:mnd // reason: max errors in channel.
+func (r *Runner) Run(flags Flags, configs []Config) {
+	r.isRunning.Store(true)
 
-	IsRunning = true
+	defer func() {
+		r.isRunning.Store(false)
+		logger.SharedLogger.Info(lang.Lang("doneRunnerNotify"))
 
-	go func() {
-		logger.SharedLogger.Info(lang.Lang("startingNotify"))
-
-		go f.RunWithError(configs, errCh)
-
-		for err := range errCh {
-			if err != nil {
-				logger.SharedLogger.Errorf("%s %v", lang.Lang("errorNotify"), err)
-
-				IsRunning = false
-			}
+		if err := r.Update(); err != nil {
+			logger.SharedLogger.Error(err)
 		}
-
-		IsRunning = false
-
-		logger.SharedLogger.Info(lang.Lang("doneNotify"))
-
-		update()
 	}()
+
+	logger.SharedLogger.Info(lang.Lang("startingRunnerNotify"))
+
+	errCh := make(chan error, 1)
+	go flags.RunWithError(configs, errCh)
+
+	for err := range errCh {
+		if err != nil {
+			logger.SharedLogger.Errorf("%s %v", lang.Lang("errorNotify"), err)
+		}
+	}
 }
 
 // RunWithError runs the program with error handling.
@@ -66,7 +93,8 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 			logger.SharedLogger.Infof("%s took %s", methodName, elapsedTime)
 		})
 		if err != nil {
-			logger.SharedLogger.Error("failed to benchmark", "err", err)
+			errCh <- err
+
 			return
 		}
 	}
@@ -74,23 +102,16 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 
 // runner starts the extraction and processing of mods.
 func (f Flags) runner(config Config) {
-	for _, search := range config.Mods {
-		logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Output)
+	SharedCleaner.Clean([]Config{config}, Output, func() error {
+		for _, search := range config.Mods {
+			io.Extract(*f.Flags, search)
 
-		if err := search.CleanOutputDirectory(); err != nil {
-			logger.SharedLogger.Error(err)
-		}
-	}
-
-	for _, search := range config.Mods {
-		if err := io.Extract(*f.Flags, search); err != nil {
-			logger.SharedLogger.Error("failed to extract mods", "err", err)
-			continue
+			if err := config.Process(PathSearch{PathSearch: &search}); err != nil {
+				logger.SharedLogger.Error("failed to process mods", "err", err)
+				continue
+			}
 		}
 
-		if err := config.Process(PathSearch{PathSearch: &search}); err != nil {
-			logger.SharedLogger.Error("failed to process mods", "err", err)
-			continue
-		}
-	}
+		return nil
+	})
 }

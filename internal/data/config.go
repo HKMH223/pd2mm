@@ -103,23 +103,23 @@ func Write(path string, config Config) error {
 }
 
 // Format a slice of paths using the current PathSearch settings.
-func (ps PathSearch) FormatSlice(slice []string) []string {
+func (search PathSearch) FormatSlice(slice []string) []string {
 	result := []string{}
 
 	for _, item := range slice {
-		result = append(result, ps.FormatString(item))
+		result = append(result, search.FormatString(item))
 	}
 
 	return result
 }
 
 // Replace keywords with relevant PathSearch settings.
-func (ps PathSearch) FormatString(str string) string {
+func (search PathSearch) FormatString(str string) string {
 	return util.Format(str, map[string]string{
-		"{path}":    ps.Mods,
-		"{output}":  ps.Output.Path,
-		"{extract}": ps.Extract.Path,
-		"{export}":  ps.Export.Path,
+		"{path}":    search.Mods,
+		"{output}":  search.Output.Path,
+		"{extract}": search.Extract.Path,
+		"{export}":  search.Export.Path,
 	})
 }
 

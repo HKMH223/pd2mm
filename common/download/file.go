@@ -34,10 +34,10 @@ import (
 )
 
 var (
-	errDownloadURLEmpty  = errors.New("download url is empty")
-	errDownloadPathEmpty = errors.New("download path is empty")
-	errDownloadNameEmpty = errors.New("download name is empty")
-	errFileHashNoMatch   = errors.New("file hash does not match")
+	ErrDownloadURLEmpty  = errors.New("download url is empty")
+	ErrDownloadPathEmpty = errors.New("download path is empty")
+	ErrDownloadNameEmpty = errors.New("download name is empty")
+	ErrFileHashNoMatch   = errors.New("file hash does not match")
 )
 
 type Messenger struct {
@@ -69,7 +69,7 @@ func DefaultHashValidator(path, hash, name string) error {
 		}
 	}
 
-	return errFileHashNoMatch
+	return ErrFileHashNoMatch
 }
 
 // File is a convenience function that validates the download parameters and then downloads the file.
@@ -160,15 +160,15 @@ func FileWithContext(ctx context.Context, state Messenger, url, hash, name, path
 // This includes checking for an empty URL, file path, and/or file name.
 func validateDownloadParams(url, path, name string) error {
 	if url == "" {
-		return errDownloadURLEmpty
+		return ErrDownloadURLEmpty
 	}
 
 	if path == "" {
-		return errDownloadPathEmpty
+		return ErrDownloadPathEmpty
 	}
 
 	if name == "" {
-		return errDownloadNameEmpty
+		return ErrDownloadNameEmpty
 	}
 
 	return nil

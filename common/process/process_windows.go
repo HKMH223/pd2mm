@@ -32,20 +32,21 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-//nolint:gochecknoglobals // reason: only call NewLazyDLL and NewProc once per variable.
+//nolint:gochecknoglobals // reason: used by multiple packages.
 var (
-	user32   = windows.NewLazyDLL("user32.dll")
-	kernal32 = syscall.NewLazyDLL("kernel32.dll")
-	psapi    = syscall.NewLazyDLL("psapi.dll")
+	DllUser32   = windows.NewLazySystemDLL("user32.dll")
+	DllKernal32 = windows.NewLazySystemDLL("kernel32.dll")
+	DllPsapi    = windows.NewLazySystemDLL("psapi.dll")
 
-	procGetWindowThreadProcessID = user32.NewProc("GetWindowThreadProcessId")
-	procOpenProcess              = kernal32.NewProc("OpenProcess")
-	procGetModuleFileNameEx      = psapi.NewProc("GetModuleFileNameExW")
-	procGetWindowText            = user32.NewProc("GetWindowTextW")
-	procGetWindowTextLength      = user32.NewProc("GetWindowTextLengthW")
+	ProcGetWindowThreadProcessID = DllUser32.NewProc("GetWindowThreadProcessId")
+	ProcOpenProcess              = DllKernal32.NewProc("OpenProcess")
+	ProcGetModuleFileNameEx      = DllPsapi.NewProc("GetModuleFileNameExW")
+	ProcGetWindowText            = DllUser32.NewProc("GetWindowTextW")
+	ProcGetWindowTextLength      = DllUser32.NewProc("GetWindowTextLengthW")
+	ProcAllocConsole             = DllUser32.NewProc("AllocConsole")
 )
 
-var errFailedToGetProcessID = errors.New("failed to get process ID")
+var ErrFailedToGetProcessID = errors.New("failed to get process ID")
 
 type (
 	HANDLE uintptr
@@ -61,10 +62,10 @@ const (
 func GetWindowProcessID(hwnd HWND) (uint32, error) {
 	var pid uint32
 
-	tid, _, _ := procGetWindowThreadProcessID.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&pid)))
+	tid, _, _ := ProcGetWindowThreadProcessID.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&pid)))
 
 	if tid == 0 {
-		return 0, errFailedToGetProcessID
+		return 0, ErrFailedToGetProcessID
 	}
 
 	return pid, nil
@@ -72,7 +73,7 @@ func GetWindowProcessID(hwnd HWND) (uint32, error) {
 
 // Get the window handle text length.
 func GetWindowTextLength(hwnd HWND) int {
-	ret, _, _ := procGetWindowTextLength.Call(
+	ret, _, _ := ProcGetWindowTextLength.Call(
 		uintptr(hwnd))
 
 	return int(ret)
@@ -84,7 +85,7 @@ func GetWindowText(hwnd HWND) (string, error) {
 
 	buf := make([]uint16, txt)
 
-	_, _, err := procGetWindowText.Call(
+	_, _, err := ProcGetWindowText.Call(
 		uintptr(hwnd),
 		uintptr(unsafe.Pointer(&buf[0])),
 		uintptr(txt))
@@ -97,7 +98,7 @@ func GetWindowText(hwnd HWND) (string, error) {
 
 // Get the window handle by function name.
 func GetWindow(funcName string) uintptr {
-	proc := user32.NewProc(funcName)
+	proc := DllUser32.NewProc(funcName)
 	hwnd, _, _ := proc.Call()
 
 	return hwnd
@@ -105,7 +106,7 @@ func GetWindow(funcName string) uintptr {
 
 // Get the process id executable name.
 func GetExecutableName(pid uint32) (string, error) {
-	hproc, _, err := procOpenProcess.Call(
+	hproc, _, err := ProcOpenProcess.Call(
 		ProcessQueryInformation|ProcessVMRead,
 		0,
 		uintptr(pid),
@@ -123,7 +124,7 @@ func GetExecutableName(pid uint32) (string, error) {
 
 	buf := make([]uint16, 1024) //nolint:mnd // reason: one megabyte buffer.
 
-	ret, _, err := procGetModuleFileNameEx.Call(
+	ret, _, err := ProcGetModuleFileNameEx.Call(
 		hproc,
 		0,
 		uintptr(unsafe.Pointer(&buf[0])),

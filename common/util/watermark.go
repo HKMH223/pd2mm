@@ -28,7 +28,7 @@ import (
 func DrawWatermark(text []string, draw func(string)) {
 	result := []string{}
 
-	longest := 0
+	var longest int
 
 	for _, txt := range text {
 		length := textLength(txt)

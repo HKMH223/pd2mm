@@ -29,10 +29,12 @@ import (
 )
 
 // StartConsoleApp is the main entry point for pd2mm.
+//
+//nolint:cyclop // reason: setup
 func StartConsoleApp(logFile io.Writer, version func()) {
-	logger.SharedLogger = logger.NewMultiLogger(logFile, os.Stdout)
+	logger.RegisterLogger(logFile, os.Stdout)
 
-	errCh := make(chan error, 3) //nolint:mnd // reason: max errors in channel.
+	errCh := make(chan error, 1)
 
 	util.DrawWatermark([]string{lang.Lang("programName"), lang.Lang("watermarkPart1"), lang.Lang("watermarkPart2")}, func(s string) {
 		logger.SharedLogger.Info(s)
@@ -52,17 +54,21 @@ func StartConsoleApp(logFile io.Writer, version func()) {
 		data.Flag.Config = ""
 	}
 
-	configs := Configs(Flags{Flags: data.Flag})
+	configs, err := Configs(Flags{Flags: data.Flag})
+	if err != nil {
+		logger.SharedLogger.Fatal(err)
+	}
+
 	if data.Flag.CleanExtract {
-		CleanExtractDirectory(configs)
+		SharedCleaner.Clean(configs, Extract, func() error { return nil })
 	}
 
 	if data.Flag.CleanExport {
-		CleanExportDirectory(configs)
+		SharedCleaner.Clean(configs, Export, func() error { return nil })
 	}
 
 	if data.Flag.CleanOutput {
-		CleanOutputDirectory(configs)
+		SharedCleaner.Clean(configs, Output, func() error { return nil })
 	}
 
 	Flags{Flags: data.Flag}.RunWithError(configs, errCh)

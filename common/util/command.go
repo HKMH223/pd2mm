@@ -32,7 +32,7 @@ var ErrNoFunctionName = errors.New("no function name")
 
 // IsFlagPassed returns true if the flag is passed.
 func IsFlagPassed(name string) bool {
-	found := false
+	var found bool
 
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == name {
@@ -71,7 +71,7 @@ func SplitArguments(str string) []string {
 
 	var part strings.Builder
 
-	quote := false
+	var quote bool
 
 	for _, char := range str {
 		switch {

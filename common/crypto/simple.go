@@ -33,7 +33,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/readwrite"
 )
 
-var errHashNotEqual = errors.New("file hash is not equal to specified hash")
+var ErrHashNotEqual = errors.New("file hash is not equal to specified hash")
 
 // Validate validates the hash of a file.
 func Validate(path, hash string, hashType hash.Hash) error {
@@ -43,7 +43,7 @@ func Validate(path, hash string, hashType hash.Hash) error {
 	}
 
 	if hashA != hash {
-		return errHashNotEqual
+		return ErrHashNotEqual
 	}
 
 	return nil

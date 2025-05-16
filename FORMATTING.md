@@ -1,6 +1,8 @@
 # Formatting
 Standard formatting guide.
 
+Read through [uber-go/guide](https://github.com/uber-go/guide/blob/master/style.md)
+
 ## Basics
 - *ALL* Variables, parameters, arguments, function names, etc., **MUST** be derived from the English language.
 - *ALL* Variables, parameters, arguments, function names, etc., **MUST** use camelCase.

@@ -29,7 +29,12 @@ import (
 
 // Setup creates the default config if it does not exist.
 func Setup() {
-	if !filesystem.Exists(filesystem.FromCwd(lang.Lang("defaultConfigPath"))) {
+	path, err := filesystem.FromCwd(lang.Lang("defaultConfigPath"))
+	if err != nil {
+		logger.SharedLogger.Error(err)
+	}
+
+	if !filesystem.Exists(path) {
 		logger.SharedLogger.Warnf("%s does not exist, creating.", lang.Lang("defaultConfigPath"))
 
 		if err := data.Write(lang.Lang("defaultConfigPath"), data.Default()); err != nil {
@@ -40,12 +45,13 @@ func Setup() {
 }
 
 // Start starts the program.
-func Start(flags Flags, configs []Config, update func()) {
-	flags.Run(configs, update)
+func Start(flags Flags, configs []Config, update func() error) {
+	SharedRunner.RegisterUpdate(update)
+	SharedRunner.Run(flags, configs)
 }
 
 // ConfigNames returns the names of the configs.
-func ConfigNames(flags Flags) []string {
+func ConfigNames(flags Flags) ([]string, error) {
 	var entries []string
 
 	if flags.Config != "" {
@@ -54,24 +60,32 @@ func ConfigNames(flags Flags) []string {
 		files, err := filesystem.GetTopFiles(lang.Lang("programName"))
 		if err != nil {
 			logger.SharedLogger.Error("failed to get files", "err", err)
-			return entries
+			return entries, nil
 		}
 
 		for _, file := range files {
+			path, err := filesystem.FromCwd(lang.Lang("programName"), file)
+			if err != nil {
+				return nil, err
+			}
+
 			if ext := filesystem.GetFileExtension(file); slices.Contains(data.FileTypes, ext) {
-				entries = append(entries, filesystem.FromCwd(lang.Lang("programName"), file))
+				entries = append(entries, path)
 			}
 		}
 	}
 
-	return entries
+	return entries, nil
 }
 
 // Configs returns the configs.
-func Configs(flags Flags) []Config {
+func Configs(flags Flags) ([]Config, error) {
 	var configs []Config
 
-	entries := ConfigNames(flags)
+	entries, err := ConfigNames(flags)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, entry := range entries {
 		if c, err := data.Read(entry); err == nil {
@@ -79,5 +93,5 @@ func Configs(flags Flags) []Config {
 		}
 	}
 
-	return configs
+	return configs, nil
 }

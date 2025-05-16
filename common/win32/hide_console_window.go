@@ -21,14 +21,13 @@
 package win32
 
 import (
+	"github.com/hkmh223/pd2mm/common/process"
 	"golang.org/x/sys/windows"
 )
 
 // HideConsoleWindow frees the console associated with the current process.
 func HideConsoleWindow() {
-	user32 := windows.NewLazySystemDLL("user32.dll")
-
-	if user32.NewProc("GetWindowThreadProcessId").Find() != nil {
+	if process.ProcGetWindowThreadProcessID.Find() != nil {
 		return
 	}
 

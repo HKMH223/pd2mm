@@ -26,6 +26,7 @@ import (
 	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/common/win32"
 	"github.com/hkmh223/pd2mm/internal/data"
+	"github.com/hkmh223/pd2mm/internal/lang"
 	"github.com/hkmh223/pd2mm/internal/pd2mm"
 )
 
@@ -40,10 +41,16 @@ func version() {
 }
 
 func main() {
+	if err := lang.SetupLanguage(); err != nil {
+		logger.SharedLogger.Fatal(err)
+	}
+
+	data.SetupFlags()
+
 	logFile := pd2mm.OpenLogFile(*data.Flag)
 	defer func() {
 		if err := logFile.Close(); err != nil {
-			panic(err)
+			logger.SharedLogger.Fatal(err)
 		}
 	}()
 
@@ -56,6 +63,8 @@ func main() {
 			win32.HideConsoleWindow()
 		}
 
-		StartApp(gitHash, logFile)
+		if err := StartApp(gitHash, logFile); err != nil {
+			logger.SharedLogger.Fatal(err)
+		}
 	}
 }

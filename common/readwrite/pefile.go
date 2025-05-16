@@ -27,10 +27,10 @@ import (
 )
 
 var (
-	errInvalidOffsetOrByteRange = errors.New("invalid offset or byte range")
-	errSectionHeaderIsSizeZero  = errors.New("section header size is 0")
-	errSectionIsNil             = errors.New("section is nil")
-	errNoBytes                  = errors.New("no bytes")
+	ErrInvalidOffsetOrByteRange = errors.New("invalid offset or byte range")
+	ErrSectionHeaderIsSizeZero  = errors.New("section header size is 0")
+	ErrSectionIsNil             = errors.New("section is nil")
+	ErrNoBytes                  = errors.New("no bytes")
 )
 
 // COFFHeader
@@ -197,7 +197,7 @@ func Open(path string) (*Data, error) {
 // WriteBytes writes the specified bytes to the file at the given offset.
 func WriteBytes(data []byte, offset int, replace []byte) error {
 	if offset < 0 || offset+len(replace) > len(data) {
-		return errInvalidOffsetOrByteRange
+		return ErrInvalidOffsetOrByteRange
 	}
 
 	copy(data[offset:], replace)
@@ -259,7 +259,7 @@ func ReadSHSize(file pe.File) (int, error) {
 	size := sections * SH32EntrySize
 
 	if size == 0 {
-		return -1, errSectionHeaderIsSizeZero
+		return -1, ErrSectionHeaderIsSizeZero
 	}
 
 	return size, nil
@@ -299,7 +299,7 @@ func ReadSectionBytes(file *Data, sectionVirtualAddress, sectionSize uint32) ([]
 	}
 
 	if section == nil {
-		return nil, errSectionIsNil
+		return nil, ErrSectionIsNil
 	}
 
 	offset := sectionVirtualAddress - section.VirtualAddress + section.Offset
@@ -348,7 +348,7 @@ func FindBytes(src, dest []byte) (int, error) {
 		}
 	}
 
-	return -1, errNoBytes
+	return -1, ErrNoBytes
 }
 
 // PadBytes pads the bytes to the specified size.

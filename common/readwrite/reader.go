@@ -98,19 +98,22 @@ func (r *Reader) Position() (int64, error) {
 }
 
 // Get the size of the file.
-func (r *Reader) Size() (int64, error) {
+//
+//nolint:nonamedreturns // reason: return error from defered function.
+func (r *Reader) Size() (size int64, err error) {
 	cur, err := r.file.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return 0, err
 	}
 
 	defer func() {
-		if _, err := r.file.Seek(cur, io.SeekStart); err != nil {
-			panic(err)
+		if _, seekErr := r.file.Seek(cur, io.SeekStart); err != nil {
+			size = 0
+			err = seekErr
 		}
 	}()
 
-	size, err := r.file.Seek(0, io.SeekEnd)
+	size, err = r.file.Seek(0, io.SeekEnd)
 	if err != nil {
 		return 0, err
 	}

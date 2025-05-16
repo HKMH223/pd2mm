@@ -51,14 +51,21 @@ func (c Config) Process(ps PathSearch) error {
 
 // process handles copying files with the given PathSearch.
 func (c Config) process(search PathSearch) error {
-	directories, err := filesystem.GetTopDirectories(filesystem.FromCwd(search.Extract.Path))
+	cwd, err := filesystem.FromCwd(search.Extract.Path)
 	if err != nil {
-		logger.SharedLogger.Warn("failed to get directories", "path", search.Extract.Path, "err", err)
 		return err
 	}
 
+	directories, err := filesystem.GetTopDirectories(cwd)
+	if err != nil {
+		logger.SharedLogger.Warn("failed to get directories", "path", search.Extract.Path, "err", err)
+		return &MError{Header: "process", Message: fmt.Sprintf("failed to get directories '%s'", search.Extract.Path), Err: err}
+	}
+
 	for _, directory := range directories {
-		c.checkIncludeData(filesystem.Normalize(filepath.Join(search.Extract.Path, directory)), search)
+		if err := c.checkIncludeData(filesystem.Normalize(filepath.Join(search.Extract.Path, directory)), search); err != nil {
+			return err
+		}
 	}
 
 	if search.Export.Path != "" {
@@ -71,8 +78,13 @@ func (c Config) process(search PathSearch) error {
 }
 
 // Handle checkIncludeData settings for a given path.
-func (c Config) checkIncludeData(path string, search PathSearch) {
-	files := filesystem.GetFiles(filesystem.FromCwd(path))
+func (c Config) checkIncludeData(path string, search PathSearch) error {
+	cwd, err := filesystem.FromCwd(path)
+	if err != nil {
+		return err
+	}
+
+	files := filesystem.GetFiles(cwd)
 
 	for _, file := range files {
 		source := filesystem.Normalize(file)
@@ -91,6 +103,8 @@ func (c Config) checkIncludeData(path string, search PathSearch) {
 			break
 		}
 	}
+
+	return nil
 }
 
 // Handle checkExcludeData settings for a given path.
@@ -140,7 +154,12 @@ func (c Config) expectedIsFile(source []string, search PathSearch, expect data.E
 		return false, nil
 	}
 
-	destination = filesystem.Normalize(filesystem.FromCwd(destination))
+	cwd, err := filesystem.FromCwd(destination)
+	if err != nil {
+		return false, err
+	}
+
+	destination = filesystem.Normalize(cwd)
 
 	if util.ContainsSubslice(source, expect.Require) && util.ContainsSubslice(strings.Split(destination, "/"), expect.Require) {
 		path = strings.Join(safe.Range(source, 0, len(source)-len(expect.Require)), "/")
@@ -163,7 +182,10 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect d
 		return false, nil
 	}
 
-	destination = filesystem.FromCwd(destination)
+	destination, err := filesystem.FromCwd(destination)
+	if err != nil {
+		return false, err
+	}
 
 	index := safe.HasIndex(source, safe.Slice(expect.Path, 0))
 	src := strings.Join(safe.Range(source, 0, index), "/")

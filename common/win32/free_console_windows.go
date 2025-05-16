@@ -28,7 +28,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-var errFreeConsole = errors.New("FreeConsole returned 0")
+var ErrFreeConsole = errors.New("FreeConsole returned 0")
 
 // FreeConsole frees the console associated with the current process.
 func FreeConsole() error {
@@ -40,7 +40,7 @@ func FreeConsole() error {
 			return fmt.Errorf("FreeConsole failed: %w", e)
 		}
 
-		return errFreeConsole
+		return ErrFreeConsole
 	}
 
 	return nil
