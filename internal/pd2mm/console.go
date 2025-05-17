@@ -60,15 +60,24 @@ func StartConsoleApp(logFile io.Writer, version func()) {
 	}
 
 	if data.Flag.CleanExtract {
-		SharedCleaner.Clean(configs, Extract, func() error { return nil })
+		SharedCleaner.Clean(configs, Extract, func() error {
+			logger.SharedLogger.Info(lang.Lang("doneExtractCleanerNotify"))
+			return nil
+		})
 	}
 
 	if data.Flag.CleanExport {
-		SharedCleaner.Clean(configs, Export, func() error { return nil })
+		SharedCleaner.Clean(configs, Export, func() error {
+			logger.SharedLogger.Info(lang.Lang("doneExportCleanerNotify"))
+			return nil
+		})
 	}
 
 	if data.Flag.CleanOutput {
-		SharedCleaner.Clean(configs, Output, func() error { return nil })
+		SharedCleaner.Clean(configs, Output, func() error {
+			logger.SharedLogger.Info(lang.Lang("doneOutputCleanerNotify"))
+			return nil
+		})
 	}
 
 	Flags{Flags: data.Flag}.RunWithError(configs, errCh)

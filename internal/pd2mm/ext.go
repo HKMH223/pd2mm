@@ -19,7 +19,9 @@
 package pd2mm
 
 import (
+	"github.com/hkmh223/pd2mm/common/logger"
 	"github.com/hkmh223/pd2mm/internal/data"
+	"github.com/hkmh223/pd2mm/internal/lang"
 )
 
 // ext.go should place extensions for third party packages here.
@@ -42,7 +44,19 @@ var SharedCleaner = Cleaner{data.SharedCleaner} //nolint:gochecknoglobals // rea
 
 // Clean cleans the specified path for each configuration.
 func (c Cleaner) Clean(configs []Config, path int, update func() error) {
-	SharedCleaner.RegisterUpdate(update)
+	errCh := make(chan error, 1)
+	c.CleanWithError(configs, path, update, errCh)
+
+	for err := range errCh {
+		if err != nil {
+			logger.SharedLogger.Errorf("%s %v", lang.Lang("errorNotify"), err)
+		}
+	}
+}
+
+// Clean cleans the specified path for each configuration.
+func (c Cleaner) CleanWithError(configs []Config, path int, update func() error, errCh chan<- error) {
+	defer close(errCh)
 
 	for _, config := range configs {
 		for _, search := range config.Mods {
@@ -55,5 +69,9 @@ func (c Cleaner) Clean(configs []Config, path int, update func() error) {
 				c.Cleaner.Clean(search, search.Output)
 			}
 		}
+	}
+
+	if err := update(); err != nil {
+		errCh <- err
 	}
 }

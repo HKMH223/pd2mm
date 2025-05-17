@@ -31,28 +31,22 @@ import (
 )
 
 // Extract extracts the contents of an archive to a specified directory.
-func Extract(flags data.Flags, search data.PathSearch) {
-	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", search.Extract.Path)
+func Extract(flags data.Flags, search data.PathSearch) error {
+	source, err := filesystem.FromCwd(search.Mods)
+	if err != nil {
+		return err
+	}
 
-	data.SharedCleaner.RegisterUpdate(func() error {
-		source, err := filesystem.FromCwd(search.Mods)
-		if err != nil {
-			return err
-		}
+	destination, err := filesystem.FromCwd(search.Extract.Path)
+	if err != nil {
+		return err
+	}
 
-		destination, err := filesystem.FromCwd(search.Extract.Path)
-		if err != nil {
-			return err
-		}
+	if err := extract(flags, source, destination); err != nil {
+		return &errors.MError{Header: "Extract", Message: fmt.Sprintf("failed to extract '%s' to '%s'", source, destination), Err: err}
+	}
 
-		if err := extract(flags, source, destination); err != nil {
-			return &errors.MError{Header: "Extract", Message: fmt.Sprintf("failed to extract '%s' to '%s'", source, destination), Err: err}
-		}
-
-		return nil
-	})
-
-	data.SharedCleaner.Clean(search, search.Extract)
+	return nil
 }
 
 // extract extracts the contents of an archive to a specified directory.

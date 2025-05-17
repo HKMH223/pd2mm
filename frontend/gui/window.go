@@ -95,7 +95,9 @@ func cleanExtractDirectoryButton() {
 
 	//nolint:unparam // reason: update does not return error
 	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Extract, func() error {
+		logger.SharedLogger.Info(lang.Lang("doneExtractCleanerNotify"))
 		giu.Update()
+
 		return nil
 	})
 }
@@ -111,7 +113,9 @@ func cleanExportDirectoryButton() {
 
 	//nolint:unparam // reason: update does not return error
 	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Export, func() error {
+		logger.SharedLogger.Info(lang.Lang("doneExportCleanerNotify"))
 		giu.Update()
+
 		return nil
 	})
 }
@@ -127,7 +131,9 @@ func cleanOutputDirectoryButton() {
 
 	//nolint:unparam // reason: update does not return error
 	go pd2mm.SharedCleaner.Clean(configs, pd2mm.Output, func() error {
+		logger.SharedLogger.Info(lang.Lang("doneOutputCleanerNotify"))
 		giu.Update()
+
 		return nil
 	})
 }

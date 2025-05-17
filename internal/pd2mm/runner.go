@@ -102,16 +102,36 @@ func (f Flags) RunWithError(configs []Config, errCh chan<- error) {
 
 // runner starts the extraction and processing of mods.
 func (f Flags) runner(config Config) {
-	SharedCleaner.Clean([]Config{config}, Output, func() error {
-		for _, search := range config.Mods {
-			io.Extract(*f.Flags, search)
-
-			if err := config.Process(PathSearch{PathSearch: &search}); err != nil {
-				logger.SharedLogger.Error("failed to process mods", "err", err)
-				continue
-			}
-		}
-
-		return nil
+	SharedCleaner.Clean([]Config{config}, Extract, func() error {
+		logger.SharedLogger.Info(lang.Lang("doneExtractCleanerNotify"))
+		return runExtract(f, config)
 	})
+
+	SharedCleaner.Clean([]Config{config}, Output, func() error {
+		logger.SharedLogger.Info(lang.Lang("doneOutputCleanerNotify"))
+		return runProcess(config)
+	})
+}
+
+// runExtract extracts the contents of an archive to a specified directory.
+func runExtract(f Flags, config Config) error {
+	for _, search := range config.Mods {
+		if err := io.Extract(*f.Flags, search); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// runProcess processes the extracted mods.
+func runProcess(config Config) error {
+	for _, search := range config.Mods {
+		if err := config.Process(PathSearch{PathSearch: &search}); err != nil {
+			logger.SharedLogger.Error("failed to process mods", "err", err)
+			continue
+		}
+	}
+
+	return nil
 }
