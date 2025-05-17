@@ -331,11 +331,12 @@ func DeleteDirectory(name string, skip func(string) bool) error {
 }
 
 // Delete all empty directories at the specified path.
-func DeleteEmptyDirectories(dir string) error {
+func DeleteEmptyDirectories(dir string, errCh chan<- error) {
 	var directories []string
 
 	err := filepath.WalkDir(dir, func(path string, directory os.DirEntry, err error) error {
 		if err != nil {
+			errCh <- err
 			return err
 		}
 
@@ -346,7 +347,8 @@ func DeleteEmptyDirectories(dir string) error {
 		return nil
 	})
 	if err != nil {
-		return err
+		errCh <- err
+		return
 	}
 
 	for i := len(directories) - 1; i >= 0; i-- {
@@ -354,18 +356,29 @@ func DeleteEmptyDirectories(dir string) error {
 
 		empty, err := IsEmpty(dir)
 		if err != nil {
-			return err
+			errCh <- err
+			continue
 		}
 
 		if empty {
 			err = os.Remove(dir)
 			if err != nil {
-				return err
+				errCh <- err
+				continue
 			}
 		}
 	}
+}
 
-	return nil
+// ClearReadOnlyAttr clears read-only attribute of the file or directory.
+func ClearReadOnlyAttr(root string) error {
+	return filepath.Walk(root, func(path string, _ os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		return clearReadOnlyAttr(path)
+	})
 }
 
 // Sort file names alphabetically and returns them as a slice.

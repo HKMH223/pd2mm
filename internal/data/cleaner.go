@@ -98,6 +98,11 @@ func (search PathSearch) CleanWithError(info PathInfo, errCh chan<- error) {
 
 	logger.SharedLogger.Info(lang.Lang("deleteNotify"), "path", target)
 
+	// Workaround for primarily Windows systems and how it handles the readonly attribute.
+	if err := filesystem.ClearReadOnlyAttr(target); err != nil {
+		errCh <- err
+	}
+
 	if err := filesystem.DeleteDirectory(target, func(s string) bool {
 		return skip(s, search, info)
 	}); err != nil {
@@ -106,11 +111,7 @@ func (search PathSearch) CleanWithError(info PathInfo, errCh chan<- error) {
 		return
 	}
 
-	if err := filesystem.DeleteEmptyDirectories(target); err != nil {
-		errCh <- err
-
-		return
-	}
+	filesystem.DeleteEmptyDirectories(target, errCh)
 }
 
 // Check if the file name should be excluded.
@@ -119,9 +120,6 @@ func skip(name string, search PathSearch, info PathInfo) bool {
 
 	for _, exclude := range info.ExcludeClean {
 		excludeNormalized := search.formatSubSlices(exclude)
-
-		logger.SharedLogger.Info(normalized)
-		logger.SharedLogger.Info(excludeNormalized)
 
 		if util.ContainsSubslice(normalized, excludeNormalized) {
 			return true
