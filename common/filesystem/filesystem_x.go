@@ -23,6 +23,8 @@ package filesystem
 import "os"
 
 // clearReadOnlyAttr clears the read-only attribute of a file or directory.
+//
+//nolint:mnd // reason: perms
 func clearReadOnlyAttr(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
