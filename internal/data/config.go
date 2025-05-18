@@ -39,21 +39,21 @@ type PathSearch struct {
 	Extract PathInfo     `json:"extract"`
 	Export  PathInfo     `json:"export"`
 	Include []Include    `json:"include"`
-	Exclude [][]string   `json:"exclude"`
+	Exclude []string     `json:"exclude"`
 	Expects []Expect     `json:"expects"`
 	Copy    []PathCopy   `json:"copy"`
 	Rename  []PathRename `json:"rename"`
 }
 
 type PathInfo struct {
-	Path         string     `json:"path"`
-	ExcludeClean [][]string `json:"excludeClean"`
+	Path         string   `json:"path"`
+	ExcludeClean []string `json:"excludeClean"`
 }
 
 type PathRename struct {
-	Path []string `json:"path"`
-	From []string `json:"from"`
-	To   []string `json:"to"`
+	Path string `json:"path"`
+	From string `json:"from"`
+	To   string `json:"to"`
 }
 
 type PathCopy struct {
@@ -67,10 +67,10 @@ type Include struct {
 }
 
 type Expect struct {
-	Path      []string `json:"path"`
-	Require   []string `json:"require"`
-	Exclusive bool     `json:"exclusive"`
-	Base      int      `json:"base"`
+	Path      string `json:"path"`
+	Require   string `json:"require"`
+	Exclusive bool   `json:"exclusive"`
+	Base      int    `json:"base"`
 }
 
 // Read reads the config file at path and returns a Config.
@@ -131,43 +131,43 @@ func Default() Config {
 				Mods: "pd2mm/pd2/mods",
 				Output: PathInfo{
 					Path: "pd2mm/pd2/output/mods",
-					ExcludeClean: [][]string{
-						{"{export}", "saves"},
-						{"{export}", "logs"},
-						{"{output}", "saves"},
-						{"{output}", "logs"},
+					ExcludeClean: []string{
+						"{export}/saves",
+						"{export}/logs",
+						"{output}/saves",
+						"{output}/logs",
 					},
 				},
 				Extract: PathInfo{
 					Path: "pd2mm/pd2/extract/mods",
-					ExcludeClean: [][]string{
-						{"{export}", "saves"},
-						{"{export}", "logs"},
-						{"{output}", "saves"},
-						{"{output}", "logs"},
+					ExcludeClean: []string{
+						"{export}/saves",
+						"{export}/logs",
+						"{output}/saves",
+						"{output}/logs",
 					},
 				},
 				Export: PathInfo{
 					Path: "",
-					ExcludeClean: [][]string{
-						{"{export}", "saves"},
-						{"{export}", "logs"},
-						{"{output}", "saves"},
-						{"{output}", "logs"},
+					ExcludeClean: []string{
+						"{export}/saves",
+						"{export}/logs",
+						"{output}/saves",
+						"{output}/logs",
 					},
 				},
 				Include: []Include{},
-				Exclude: [][]string{},
+				Exclude: []string{},
 				Expects: []Expect{
 					{
-						Path:      []string{"mod.txt"},
-						Require:   []string{},
+						Path:      "mod.txt",
+						Require:   "",
 						Exclusive: false,
 						Base:      0,
 					},
 					{
-						Path:      []string{"main.xml"},
-						Require:   []string{},
+						Path:      "main.xml",
+						Require:   "",
 						Exclusive: false,
 						Base:      0,
 					},
@@ -179,29 +179,29 @@ func Default() Config {
 				Mods: "pd2mm/pd2/mod_overrides",
 				Output: PathInfo{
 					Path:         "pd2mm/pd2/output/mod_overrides",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Extract: PathInfo{
 					Path:         "pd2mm/pd2/extract/mod_overrides",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Export: PathInfo{
 					Path:         "",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Include: []Include{},
-				Exclude: [][]string{},
+				Exclude: []string{},
 				Expects: []Expect{
-					{Path: []string{"main.xml"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"add.xml"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"effects"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"assets"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"units"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"hooks"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"guis"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"anims"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"soundbanks"}, Require: []string{}, Exclusive: false, Base: 0},
-					{Path: []string{"fonts"}, Require: []string{}, Exclusive: false, Base: 0},
+					{Path: "main.xml", Require: "", Exclusive: false, Base: 0},
+					{Path: "add.xml", Require: "", Exclusive: false, Base: 0},
+					{Path: "effects", Require: "", Exclusive: false, Base: 0},
+					{Path: "assets", Require: "", Exclusive: false, Base: 0},
+					{Path: "units", Require: "", Exclusive: false, Base: 0},
+					{Path: "hooks", Require: "", Exclusive: false, Base: 0},
+					{Path: "guis", Require: "", Exclusive: false, Base: 0},
+					{Path: "anims", Require: "", Exclusive: false, Base: 0},
+					{Path: "soundbanks", Require: "", Exclusive: false, Base: 0},
+					{Path: "fonts", Require: "", Exclusive: false, Base: 0},
 				},
 				Copy:   []PathCopy{},
 				Rename: []PathRename{},
@@ -210,22 +210,22 @@ func Default() Config {
 				Mods: "pd2mm/pd2/mod_overrides",
 				Output: PathInfo{
 					Path:         "pd2mm/pd2/output/mod_overrides",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Extract: PathInfo{
 					Path:         "pd2mm/pd2/extract/mod_overrides",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Export: PathInfo{
 					Path:         "",
-					ExcludeClean: [][]string{},
+					ExcludeClean: []string{},
 				},
 				Include: []Include{},
-				Exclude: [][]string{},
+				Exclude: []string{},
 				Expects: []Expect{
 					{
-						Path:      []string{"main.xml"},
-						Require:   []string{},
+						Path:      "main.xml",
+						Require:   "",
 						Exclusive: false,
 						Base:      0,
 					},

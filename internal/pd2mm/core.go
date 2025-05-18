@@ -112,7 +112,7 @@ func (c Config) checkExcludeData(path string, search PathSearch) bool {
 	parts := strings.Split(filesystem.Normalize(path), "/")
 
 	for _, exclude := range search.Exclude {
-		if util.ContainsSubslice(parts, search.FormatSlice(exclude)) {
+		if util.ContainsSubslice(parts, search.FormatSlice(filesystem.ToNormalizedSlice(exclude))) {
 			return false
 		}
 	}
@@ -131,13 +131,15 @@ func (c Config) checkExpectsData(path string, search PathSearch) (bool, error) {
 	source := strings.Split(path, "/")
 
 	for _, expect := range search.Expects {
-		if len(source) < len(expect.Path) {
+		expectPath := filesystem.ToNormalizedSlice(expect.Path)
+
+		if len(source) < len(expectPath) {
 			continue
 		}
 
-		if slices.Contains(expect.Path, filesystem.GetFileExtension(safe.Slice(source, len(source)-1))) {
+		if slices.Contains(expectPath, filesystem.GetFileExtension(safe.Slice(source, len(source)-1))) {
 			return c.expectedIsFile(source, search, expect)
-		} else if util.Matches(source, expect.Path) == len(expect.Path) {
+		} else if util.Matches(source, expectPath) == len(expectPath) {
 			return c.expectedIsDirectory(source, search, expect)
 		}
 	}
@@ -160,12 +162,13 @@ func (c Config) expectedIsFile(source []string, search PathSearch, expect data.E
 	}
 
 	destination = filesystem.Normalize(cwd)
+	expectRequire := filesystem.ToNormalizedSlice(expect.Require)
 
-	if util.ContainsSubslice(source, expect.Require) && util.ContainsSubslice(strings.Split(destination, "/"), expect.Require) {
-		path = strings.Join(safe.Range(source, 0, len(source)-len(expect.Require)), "/")
+	if util.ContainsSubslice(source, expectRequire) && util.ContainsSubslice(strings.Split(destination, "/"), expectRequire) {
+		path = strings.Join(safe.Range(source, 0, len(source)-len(expectRequire)), "/")
 
 		dest := strings.Split(destination, "/")
-		destination = strings.Join(safe.Range(dest, 0, len(dest)-len(expect.Require)), "/")
+		destination = strings.Join(safe.Range(dest, 0, len(dest)-len(expectRequire)), "/")
 	}
 
 	if err := c.copyExpected(path, destination, false, search); err != nil {
@@ -187,7 +190,7 @@ func (c Config) expectedIsDirectory(source []string, search PathSearch, expect d
 		return false, err
 	}
 
-	index := safe.HasIndex(source, safe.Slice(expect.Path, 0))
+	index := safe.HasIndex(source, safe.Slice(filesystem.ToNormalizedSlice(expect.Path), 0))
 	src := strings.Join(safe.Range(source, 0, index), "/")
 
 	if expect.Exclusive {
@@ -222,7 +225,7 @@ func fixDestination(parts []string, search PathSearch, expect data.Expect, dir b
 	result := strings.Join(parts, "/")
 
 	if dir {
-		index := safe.HasIndex(parts, safe.Slice(expect.Path, 0))
+		index := safe.HasIndex(parts, safe.Slice(filesystem.ToNormalizedSlice(expect.Path), 0))
 		result = strings.Join(safe.Range(parts, 0, index), "/")
 
 		if expect.Exclusive {
@@ -231,11 +234,11 @@ func fixDestination(parts []string, search PathSearch, expect data.Expect, dir b
 	}
 
 	results := strings.Split(result, "/")
-	expect.Require = append(expect.Require, safe.Slice(results, len(results)-1))
-	base := strings.Join(expect.Require, "/")
+	expectRequire := append(filesystem.ToNormalizedSlice(expect.Require), safe.Slice(results, len(results)-1))
+	base := strings.Join(expectRequire, "/")
 
 	if dir {
-		base = strings.Join(safe.Range(expect.Require, 0, len(expect.Require)-expect.Base), "/")
+		base = strings.Join(safe.Range(expectRequire, 0, len(expectRequire)-expect.Base), "/")
 		return filepath.Join(search.Output.Path, base)
 	}
 
@@ -248,10 +251,11 @@ func (c Config) copyExpected(src, dest string, expected bool, search PathSearch)
 	dest = filesystem.Normalize(dest)
 
 	for _, rename := range search.Rename {
-		pathFmt := search.FormatSlice(rename.Path)
-		fromFmt, toFmt := search.FormatSlice(rename.From), search.FormatSlice(rename.To)
-		parts := strings.Split(src, "/")
+		pathFmt := search.FormatSlice(filesystem.ToNormalizedSlice(rename.Path))
+		fromFmt := search.FormatSlice(filesystem.ToNormalizedSlice(rename.From))
+		toFmt := search.FormatSlice(filesystem.ToNormalizedSlice(rename.To))
 
+		parts := strings.Split(src, "/")
 		if util.ContainsSubslice(parts, pathFmt) {
 			result := util.ReplaceSubslice(strings.Split(dest, "/"), fromFmt, toFmt)
 			dest = strings.Join(result, "/")

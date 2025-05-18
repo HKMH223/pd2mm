@@ -119,7 +119,7 @@ func skip(name string, search PathSearch, info PathInfo) bool {
 	normalized := strings.Split(filesystem.Normalize(name), "/")
 
 	for _, exclude := range info.ExcludeClean {
-		excludeNormalized := search.formatSubSlices(exclude)
+		excludeNormalized := search.formatSubSlices(filesystem.ToNormalizedSlice(exclude))
 
 		if util.ContainsSubslice(normalized, excludeNormalized) {
 			return true

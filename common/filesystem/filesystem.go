@@ -50,8 +50,8 @@ var ReservedHostnames = []string{ //nolint:gochecknoglobals // reason: ReservedH
 }
 
 // Normalize replaces all backslashes with forward slashes in a string.
-func Normalize(str string) string {
-	return strings.ReplaceAll(str, "\\", "/")
+func Normalize(path string) string {
+	return strings.ReplaceAll(path, "\\", "/")
 }
 
 // NormalizeSlice replaces all backslashes with forward slashes in a slice of strings.
@@ -63,6 +63,11 @@ func NormalizeSlice(slice []string) []string {
 	}
 
 	return result
+}
+
+// ToNormalizedSlice splits a string into a slice of strings using forward slashes.
+func ToNormalizedSlice(path string) []string {
+	return strings.Split(Normalize(path), "/")
 }
 
 // PathCheckTypeEndsWith checks if the file name ends with a given target.
