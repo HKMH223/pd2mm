@@ -12,7 +12,7 @@ fmt:
 	gofumpt -l -w -extra .
 
 mod:
-	go get -u
+	go get -u ./...
 	go mod tidy
 
 lint: fmt
